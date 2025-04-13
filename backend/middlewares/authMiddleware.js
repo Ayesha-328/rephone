@@ -41,13 +41,40 @@ const protect = async (req, res, next) => {
       }
 };
 
-// const admin = async (req, res, next) => {
-//     if (req.user && req.user.isAdmin) {
-//         next();
-//     } else {
-//         res.status(401);
-//         throw new Error('Not authorized as an admin');
-//     }
-// }
+const protectAdmin = async (req, res, next) => {
+    try {
+        const token = req.cookies.jwt;
+        const client = await pool.connect();
+    
+        if (!token) {
+          return res.status(401).json({ message: "Unauthorized: No token provided" });
+        }
+    
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+        const admin = await client.query(
+            `SELECT * FROM "Admin" WHERE "adminId" = $1`,
+            [decoded.userId]
+        );
+    
+        if (admin.rows.length === 0) {
+            return res.status(401).json({ message: "Unauthorized: Admin not found" });
+        }
+        
+        const adminInfo = admin.rows[0];
+    
+        if (!admin) {
+          return res.status(401).json({ message: "Unauthorized: Admin not found" });
+        }
+        await client.release();
+    
+        req.admin = adminInfo;
+        next();
+      } catch (err) {
+        console.log("Error in protectRoute:", err.message);
+        res.status(500).json({ message: err.message });
+      }
+}
 
-export { protect };
+
+export { protect , protectAdmin};
