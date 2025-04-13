@@ -143,10 +143,9 @@ const getVerifiedPhones = async (req, res) => {
              LEFT JOIN "Phone" p ON lp."phoneId" = p."phoneId"
              LEFT JOIN "Seller" s ON lp."sellerId" = s.sellerid
              LEFT JOIN "User" u ON s.userid = u.userid
-             WHERE lp.status = 'approved'`
+             WHERE lp.status = 'verified'`
         );
-        res.status(200).json(verifiedPhones.rows);
-
+        
         // format the phone images
         verifiedPhones.rows.forEach(product => {
             product.profilePic = product.profilePic ? product.profilePic.toString('base64') : null;
@@ -154,6 +153,7 @@ const getVerifiedPhones = async (req, res) => {
             ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
             : [];
         });
+        res.status(200).json(verifiedPhones.rows);
     } catch (error) {
         console.error("Error during getting all verified phones:", error);
         res.status(500).json({ error: "Failed to get all verified phones. Please try again." });

@@ -110,7 +110,19 @@ const validateRegistration = [
     //   .withMessage("Image is required")
   ];
 
+  // Admin validation
+  const validateAdminRegistration = [
+    body("name").notEmpty().isAlpha("en-US", { ignore: " " }).isLength({min:1, max: 30 }).withMessage("Name is required"),
+    body("email").isEmail().withMessage("Invalid email format"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long")
+      .matches(/[a-zA-Z]/)
+      .withMessage("Password must contain at least one letter")
+  ];
+
 export {
+  validateAdminRegistration,
   validateRegistration, 
   validateLogin, 
   validateUpdateSeller, 
