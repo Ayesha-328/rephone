@@ -136,9 +136,9 @@ const ContactPage = () => {
               <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">
                 <h2 className="text-2xl font-semibold mb-4">Office Location</h2>
                 <div className="text-gray-200">
-                  <p>Rephone Headquarters</p>
-                  <p>123 Tech Street, Block 7</p>
-                  <p>Gulshan-e-Iqbal</p>
+                  <p>Office #402, 4th Floor</p>
+                  <p>Business Plaza</p>
+                  <p>Shahrah e faisal</p>
                   <p>Karachi, Pakistan</p>
                 </div>
               </div>

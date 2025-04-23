@@ -69,18 +69,13 @@ export const Header = () => {
             {/* Action Buttons */}
             <div className="flex items-center space-x-6">
               <Link
-                to="/SellerDashboard"
+                to="/seller/login"
                 className="text-white hover:text-[#FF9F1C] transition-colors font-medium"
               >
-                Become a Seller
+                Sell a Phone
               </Link>
               <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
-                  className="bg-[#FF9F1C] text-white px-4 py-2 rounded-full hover:bg-[#f39200] transition-colors"
-                >
-                Sign In
-                </Link>
+                
                 <Link to="/cart" className="text-white hover:text-[#FF9F1C] transition-colors">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -130,17 +125,17 @@ export const Header = () => {
               ))}
               <div className="pt-4 border-t border-white/10">
                 <Link
-                  to="/SellerDashboard"
+                  to="/seller/login"
                   className="block text-white hover:text-[#FF9F1C] transition-colors"
                 >
-                  Become a Seller
+                  Sell a Phone
                 </Link>
                 <div className="flex items-center space-x-4 mt-4">
                   <Link
-                    to="/login"
+                    to="/register"
                     className="bg-[#FF9F1C] text-white px-4 py-2 rounded-full hover:bg-[#f39200] transition-colors"
                   >
-                    Sign In
+                    Start a Business
                   </Link>
                   <Link
                     to="/cart"

@@ -45,10 +45,10 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-semibold mb-4">Contact Us</h3>
             <ul className="space-y-2 text-gray-300">
-              <li>123 Tech Street</li>
-              <li>Innovation City, IC 12345</li>
+              <li>Office #402, 4th Floor, Business Plaza</li>
+              <li>Shahrah e faisal, Karachi</li>
               <li>info@rephone.com</li>
-              <li>+1 (123) 456-7890</li>
+              <li>+92 21 23456712</li>
             </ul>
           </div>
 
