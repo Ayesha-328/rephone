@@ -11,7 +11,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/admin/verify/${imei}`, {
+        const response = await axios.get(`/verify/${imei}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('adminToken')}`
           }

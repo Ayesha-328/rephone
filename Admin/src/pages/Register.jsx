@@ -56,7 +56,7 @@ const Register = () => {
         <div className="auth-container">
             <div className="auth-box">
                 <h1 className="auth-title">Rephone</h1>
-                <h2 className="auth-subtitle">Admin Sign Up</h2>
+                <h2 className="auth-subtitle">Admin | Sign Up</h2>
                 {error && <div className="auth-error">{error}</div>}
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">

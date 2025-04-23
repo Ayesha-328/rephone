@@ -28,4 +28,5 @@ router.put('/verify/:imei', protectAdmin, verifyPhone)
 // get the list of all the verified phones along with the details of the admin who verified it
 router.get('/verified-phones', protectAdmin, getVerifiedPhonesList)
 
+
 export default router;

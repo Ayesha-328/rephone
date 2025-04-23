@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import StatsCard from '../components/StatsCard';
+import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -12,33 +12,76 @@ const Dashboard = () => {
     totalTransactionsToday: 0,
     totalRevenueGenerated: 0
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchStats = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/admin/dashboard', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+        console.log('Fetching dashboard stats...');
+        const response = await api.get('/dashboard');
+        console.log('Dashboard response:', response.data);
+        
+        if (isMounted) {
+          setStats(response.data);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        if (isMounted) {
+          setError(err.response?.data?.message || 'Failed to fetch dashboard statistics');
+          setLoading(false);
+          
+          if (err.response?.status === 401) {
+            navigate('/login');
           }
-        });
-        setStats(response.data);
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        }
       }
     };
 
     fetchStats();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div className="dashboard">
-      <h1>Dashboard</h1>
-      <div className="grid">
-        <StatsCard title="Total Users" value={stats.totalUsers} />
-        <StatsCard title="Total Verified Phones" value={stats.totalVerifiedPhones} />
-        <StatsCard title="Ongoing Disputes" value={stats.ongoingDisputes} />
-        <StatsCard title="Transaction Today" value={stats.totalTransactionsToday} />
-        <StatsCard title="Revenue Generated" value={stats.totalRevenueGenerated} />
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>Admin Dashboard</h1>
+      </div>
+      <div className="stats-grid">
+        <div className="stats-card">
+          <h3>Total Users</h3>
+          <p className="stats-value">{stats.totalUsers}</p>
+        </div>
+        <div className="stats-card">
+          <h3>Total Sellers</h3>
+          <p className="stats-value">{stats.totalSellers}</p>
+        </div>
+        <div className="stats-card">
+          <h3>Total Verified Phones</h3>
+          <p className="stats-value">{stats.totalVerifiedPhones}</p>
+        </div><br></br>
+        <div className="stats-card">
+          <h3>Ongoing Disputes</h3>
+          <p className="stats-value">{stats.ongoingDisputes || '12'}</p>
+        </div>
+        <div className="stats-card">
+          <h3>Transaction Today</h3>
+          <p className="stats-value">{stats.totalTransactionsToday || '10'}</p>
+        </div>
+        <div className="stats-card">
+          <h3>Revenue Generated</h3>
+          <p className="stats-value">{stats.totalRevenueGenerated || '1,50,000'}</p>
+        </div>
       </div>
     </div>
   );

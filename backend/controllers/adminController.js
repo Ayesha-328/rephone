@@ -103,7 +103,7 @@ const getAdminDashboardAnalytics = async (req, res) => {
     const totalBusinessAccounts = await pool.query('SELECT COUNT(*) FROM "Business"');
 
     // tatal verified phones
-    const totalVerifiedPhones = await pool.query('SELECT COUNT(*) FROM "ListedProduct" WHERE status = "verified"');
+    const totalVerifiedPhones = await pool.query(`SELECT COUNT(*) FROM "ListedProduct" WHERE status = 'verified'`);
 
     // ongoing disputes
 

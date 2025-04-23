@@ -1,158 +1,159 @@
-
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SellerDashboard } from "../client/sellers/pages/SellerDasboard";
-// import { SellerForm } from "../client/sellers/components/sellerForm";
+
 export const Header = () => {
-  const [activeItem, setActiveItem] = useState("home");
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const [isSearchOpen, setSearchOpen] = useState(false);
+  const location = useLocation();
 
-
-  const handleActiveItem = (item) => {
-    setActiveItem(item);
-    // setActivePage(item); // Update the active page in the parent component
-    setMenuOpen(false); // Close the menu on selection
-    setSearchOpen(false);
+  const handleMenuClick = () => {
+    setMenuOpen(false);
   };
+
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "About Us", path: "/about" },
+    { name: "Services", path: "/services" },
+    { name: "Contact", path: "/contact" },
+    { name: "Category", path: "/category" }
+  ];
+
   return (
-    <>
-      <motion.nav
-        initial={{ y: -100, opacity: 0 }} // Moves navbar 100px up and makes it invisible
-        animate={{ y: 0, opacity: 1 }} // Brings it down to its original position
-        transition={{ duration: 1, ease: "easeOut" }} // Controls speed and smoothness 
-        className="text-white w-full flex ml-2 fixed left-0 justify-between items-center top-6 lg:top-10">
-        <button
-          onClick={() => setMenuOpen(!isMenuOpen)}
-          className="md:hidden items-center justify-center bg-transparent w-18 h-16 mt-0"
-        >
-          <img className="h-10 w-10" src="/menu.png" alt="Menu" />
-        </button>
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#002647] to-[#003566] shadow-lg"
+    >
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-3xl font-bold text-white hover:text-[#FF9F1C] transition-colors">
+              Rephone
+            </span>
+          </Link>
 
-        {/* Container for the header content */}
-        <div className="max-w-[40%] min-h-[50px] bg-[#003566] container mx-auto justify-center items-center p-2 rounded-tl-2xl rounded-bl-2xl drop-shadow-[6px_-6px_3px_rgba(244,244,244,0.4),-6px_6px_4px_rgba(255,159,28,0.6)] hidden md:flex">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <div className="flex items-center space-x-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`text-lg font-medium ${
+                    location.pathname === item.path
+                      ? "text-[#FF9F1C] border-b-2 border-[#FF9F1C]"
+                      : "text-white hover:text-[#FF9F1C] hover:border-b-2 hover:border-[#FF9F1C]"
+                  } transition-all duration-200 py-2`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
 
-          {/* Desktop Menu */}
-          <ul className="hidden md:flex space-x-3 gap-6 font-[Merriweather] text-xl font-bold cursor-pointer">
-            {["home", "About Us", "Services", "Catagory"].map((item) => (
-              <li
-                key={item}
-                className={`p-2 border-b-4 ${activeItem === item
-                  ? "border-[#FF9F1C]"
-                  : "border-transparent"
-                  } hover:border-[#000C1C] transition-all`}
-                onClick={() => handleActiveItem(item)}
-              >
-                {item.charAt(0).toUpperCase() + item.slice(1)}
-              </li>
-            ))}
-          </ul>
-
-
-          {/* Hamburger Icon for Mobile */}
-
-        </div>
-
-        {/* Second Div: Input Box + Icons */}
-        <div className="max-w-[40%] min-h-[50px] flex-1 flex justify-end items-center space-x-8 bg-[#003566] px-6 ml-42 mr-10 rounded-tr-2xl rounded-br-2xl drop-shadow-[-6px_6px_4px_rgba(255,159,28,0.6),6px_-6px_3px_rgba(244,244,244,0.4)] hidden md:flex">
-
-          {/* Input Box */}
-
-          {/* Seller? Sign-In, Cart Links */}
-          <ul className="hidden md:flex items-center space-x-8 font-[Merriweather] text-xl font-bold text-[#FFFFFF]">
-            <li className="relative ">
+            {/* Search Bar */}
+            <div className="relative flex items-center">
               <input
                 type="text"
                 placeholder="Search..."
-                className="px-4 py-2 pr-12 bg-[#FF9F1C] font-bold text-xl w-60 rounded-tr-2xl rounded-br-2xl text-[#FFFFFF] focus:outline-none"
+                className="w-64 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-transparent"
               />
-              <img
-                src="/magnifying-glass.png"
-                className="w-10 h-10 absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer border-l-4 border-[#003566]"
-                alt="Search"
-              />
-            </li>
+              <button className="absolute right-3 text-white/70 hover:text-[#FF9F1C]">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
 
-
-            <li className="cursor-pointer text-white hover:text-gray-300 transition mt-1 ml-2 font-[Merriweather] font-bold text-xl">
+            {/* Action Buttons */}
+            <div className="flex items-center space-x-6">
               <Link
-                to="/SellerDashboard">
-                Seller?
+                to="/SellerDashboard"
+                className="text-white hover:text-[#FF9F1C] transition-colors font-medium"
+              >
+                Become a Seller
               </Link>
-            </li>
-
-
-
-            <li className="bg-[#FF9F1C] w-40 h-16 flex justify-center items-center rounded-tr-2xl rounded-br-2xl gap-6 -mr-7">
-              <Link to="/SellerDashboard">
-                <img src="/entrance.png" className="w-10 h-10 cursor-pointer" alt="Entrance" />
-              </Link>
-              <img src="/bag.png" className="w-10 h-10 cursor-pointer" />
-            </li>
-          </ul>
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-        {/* 
-      {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-[#003566] p-4 absolute top-18 w-65 z-40 rounded-2xl">
-            <ul className="flex flex-col space-y-3 font-[Merriweather] text-xl">
-              {["home", "About Us", "Services", "Catagory"].map((item) => (
-                <li
-                  key={item}
-                  className={`p-2 border-b-4 ${activeItem === item
-                    ? "border-[#FF9F1C]"
-                    : "border-transparent"
-                    } hover:border-[#000C1C] transition-all`}
-                  onClick={() => handleActiveItem(item)}
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/login"
+                  className="bg-[#FF9F1C] text-white px-4 py-2 rounded-full hover:bg-[#f39200] transition-colors"
                 >
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </li>
-              ))}
-            </ul>
-
+                Sign In
+                </Link>
+                <Link to="/cart" className="text-white hover:text-[#FF9F1C] transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
           </div>
 
-
-        )}
-        {/* Always Visible Mobile Search Bar */}
-        <div className="md:hidden bg-[#003566] p-4 absolute top-1 left-30 w-55 h-14 z-40 rounded-2xl flex">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-20 px-2 py-1 bg-[#FF9F1C] font-bold text-sm rounded-lg text-[#FFFFFF] focus:outline-none"
-            />
-            <img
-              src="/magnifying-glass.png"
-              className="w-5 h-5 absolute right-1 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              alt="Search"
-            />
-          </div>
-          <p className="cursor-pointer hover:text-gray-300 transition mt-1 ml-2 font-[Merriweather] font-bold text-sm">
-            Seller?
-          </p>
-          <div className="bg-[#FF9F1C] w-15 h-14 flex justify-center items-center rounded-tr-2xl rounded-br-2xl  gap-2 -mt-4 ml-3 -mr-8">
-            <img src="/entrance.png" className="w-6 h-6 cursor-pointer" />
-            <img src="/bag.png" className="w-6 h-6 cursor-pointer" />
-          </div>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMenuOpen(!isMenuOpen)}
+            className="md:hidden text-white hover:text-[#FF9F1C] transition-colors"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
 
-      </motion.nav>
-
-    </>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4">
+            <div className="flex flex-col space-y-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={handleMenuClick}
+                  className={`text-lg ${
+                    location.pathname === item.path
+                      ? "text-[#FF9F1C]"
+                      : "text-white hover:text-[#FF9F1C]"
+                  } transition-colors`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="pt-4 border-t border-white/10">
+                <Link
+                  to="/SellerDashboard"
+                  className="block text-white hover:text-[#FF9F1C] transition-colors"
+                >
+                  Become a Seller
+                </Link>
+                <div className="flex items-center space-x-4 mt-4">
+                  <Link
+                    to="/login"
+                    className="bg-[#FF9F1C] text-white px-4 py-2 rounded-full hover:bg-[#f39200] transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/cart"
+                    className="text-white hover:text-[#FF9F1C] transition-colors"
+                  >
+                    Cart
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.nav>
   );
 };

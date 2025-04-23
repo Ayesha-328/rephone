@@ -8,10 +8,10 @@ import ProductDetails from './pages/ProductDetails';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import './App.css';
-
+import ListedProducts from './pages/ListedProducts';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem('adminToken')
+    !!localStorage.getItem('adminId')  // Check if adminId exists
   );
 
   // Protected Route wrapper
@@ -58,14 +58,15 @@ function App() {
           }
         />
         <Route
-          path="/products/:imei"
+          path="/Listedproducts"
           element={
             <ProtectedRoute>
-              <ProductDetails />
+              <ListedProducts />
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/product-details/:imei" element={<ProductDetails />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

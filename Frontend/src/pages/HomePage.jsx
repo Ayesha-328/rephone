@@ -9,8 +9,9 @@ const HomePage = () => {
       <Header/> 
       <HomepageComp/>
     <ProductCatalog />
-
       </>
+      
+      
   );
 };
 

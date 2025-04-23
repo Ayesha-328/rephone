@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
@@ -10,23 +10,22 @@ const Login = ({ setIsAuthenticated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt with:', { email, password });
-
+    setError('');
+    
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/login', 
+      const response = await api.post('/login', 
         { email, password },
-        {
+        { 
+          withCredentials: true,  // This is crucial for cookies
           headers: {
             'Content-Type': 'application/json'
-          },
-          withCredentials: true
+          }
         }
       );
 
-      console.log('Server response:', response.data);
+      console.log('Login response:', response.data);
 
       if (response.data) {
-        localStorage.setItem('adminToken', response.data.token);
         setIsAuthenticated(true);
         navigate('/dashboard');
       }
@@ -34,7 +33,7 @@ const Login = ({ setIsAuthenticated }) => {
       console.error('Login error:', err);
       setError(err.response?.data?.error || 'Login failed');
     }
-};
+  };
 
   return (
     <div className="auth-container">

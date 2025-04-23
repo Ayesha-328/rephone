@@ -1,78 +1,85 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import ProductCard from '../components/ProductCard';
+import api from '../utils/api';
 
+const decodeBase64Hex = (hexString) => {
+  // Remove the \\x prefix and decode the Base64 string
+  const base64String = hexString.replace(/^\\x/, '');
+  const decoded = atob(base64String);
+  return decoded;
+};
 const ProductListing = () => {
-  const [products, setProducts] = useState([]);
-  const navigate = useNavigate();
+  const [verifiedPhones, setVerifiedPhones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchProducts();
+    const fetchVerifiedPhones = async () => {
+      try {
+        const response = await api.get('/verified-phones');
+        setVerifiedPhones(response.data.phones || []);
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch verified phones');
+        setLoading(false);
+      }
+    };
+
+    fetchVerifiedPhones();
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/admin/verification-list', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-      setProducts(response.data.requests);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
-  const handleViewDetails = (imei) => {
-    navigate(`/products/${imei}`);
-  };
-
-  const handleVerify = async (imei) => {
-    try {
-      await axios.put(`http://localhost:5000/api/admin/verify/${imei}`, 
-        { status: 'verified' },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
-          }
-        }
-      );
-      fetchProducts(); // Refresh the list
-    } catch (error) {
-      console.error('Error verifying product:', error);
-    }
-  };
-
-  const handleReject = async (imei) => {
-    try {
-      await axios.put(`http://localhost:5000/api/admin/verify/${imei}`, 
-        { status: 'rejected' },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
-          }
-        }
-      );
-      fetchProducts(); // Refresh the list
-    } catch (error) {
-      console.error('Error rejecting product:', error);
-    }
-  };
+  if (!Array.isArray(verifiedPhones)) {
+    return <div className="error-message">No verified phones data available</div>;
+  }
 
   return (
     <div className="product-listing">
-      <h1>Product Listing</h1>
-      <div className="products-grid">
-        {products.map((product) => (
-          <ProductCard
-            key={product.imeiNumber}
-            product={product}
-            onViewDetails={handleViewDetails}
-            onVerify={handleVerify}
-            onReject={handleReject}
-          />
-        ))}
+      <div className="dashboard-header">
+        <h2>Verified Products</h2>
+      </div>
+
+      <div className="products-container">
+        {verifiedPhones.length === 0 ? (
+          <div>No verified phones found</div>
+        ) : (
+          <table className="products-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>IMEI</th>
+                <th>Brand</th>
+                <th>Model</th>
+                <th>Verified By</th>
+                <th>Verification Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {verifiedPhones.map((phone) => (
+                <tr key={phone.imeiNumber}>
+                  <td>
+                    {/* Check if the phone has image URLs and decode them */}
+                    {phone.phoneImage?.length > 0 ? (
+                      <img
+                        src={decodeBase64Hex(phone.phoneImage[0])} // Decode Hex to Base64 URL
+                        alt="Phone"
+                        width="80"
+                      />
+                    ) : (
+                      'No Image'
+                    )}
+                  </td>
+                  <td>{phone.imeiNumber}</td>
+                  <td>{phone.phone_brand}</td>
+                  <td>{phone.phone_model}</td>
+                  <td>{phone.adminName}</td>
+                  <td>{new Date(phone.submitDate).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
