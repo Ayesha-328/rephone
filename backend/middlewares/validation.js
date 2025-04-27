@@ -92,7 +92,9 @@ const validateRegistration = [
       .notEmpty()
       .withMessage("Price is required")
       .isNumeric()
-      .withMessage("Price must be a number"),
+      .withMessage("Price must be a number")
+      .isFloat({ min: 1000, max: 1000000 })
+      .withMessage("Price must be between 2000 and 2000000"),
     body("imei")
       .notEmpty()
       .withMessage("IMEI is required")
@@ -121,10 +123,24 @@ const validateRegistration = [
       .withMessage("Password must contain at least one letter")
   ];
 
+  // Order validation
+const validateOrder = [
+    body("name").notEmpty().withMessage("Name is required"),
+    body("email").isEmail().withMessage("Invalid email format"),
+    body("phoneNumber").notEmpty().matches(/^\d+$/).withMessage("Phone number must contain only digits"),
+    body("city").notEmpty().isAlpha("en-US", { ignore: " " }).withMessage("City is required"),
+    body("area").notEmpty().isAlpha("en-US", { ignore: " " }).withMessage("Area is required"),
+    body("street").notEmpty().isInt({ min: 1, max: 10000 }).withMessage("Street number must be a number between 1 and 10000"),
+    body("houseNumber").notEmpty().isInt({ min: 1, max: 10000 }).withMessage("House number must be a number between 1 and 10000"),
+    body("nearestLandmark").notEmpty().isString().withMessage("Nearest landmark must be a string"),
+    body("items").isArray({ min: 1 }).withMessage("Items must be an array with at least one item"),
+    body("paymentMethod").isIn(["cod", "payfast"]).withMessage("Payment method must be either 'cod' or 'payfast'")
+]
 export {
   validateAdminRegistration,
   validateRegistration, 
   validateLogin, 
   validateUpdateSeller, 
-  validateUploadPhone
+  validateUploadPhone,
+  validateOrder
 };

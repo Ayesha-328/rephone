@@ -21,7 +21,7 @@ const uploadPhone = async (req, res) => {
             [brand, model]
         );
         if (phoneInfo.rows.length === 0) {
-            return res.status(400).json({ message: "Phone info can not be found!!" });
+            return res.status(400).json({ message: "Phone info can not be found!!"});
         }
 
         console.log(phoneInfo.rows[0].phoneId);
@@ -36,9 +36,9 @@ const uploadPhone = async (req, res) => {
         }
 
         const uploadPhone = await client.query(
-            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage") 
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-            [user.sellerid, phoneInfo.rows[0].phoneId, imei, image]
+            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage","color", "price") 
+         VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
+            [user.sellerid, phoneInfo.rows[0].phoneId, imei, image, color, price]
         );
 
         const productId = uploadPhone.rows[0].productid;
@@ -143,7 +143,7 @@ const getVerifiedPhones = async (req, res) => {
              LEFT JOIN "Phone" p ON lp."phoneId" = p."phoneId"
              LEFT JOIN "Seller" s ON lp."sellerId" = s.sellerid
              LEFT JOIN "User" u ON s.userid = u.userid
-             WHERE lp.status = 'verified'`
+             WHERE lp.status = 'verified' && lp."isSold" = false`
         );
         
         // format the phone images
@@ -283,59 +283,8 @@ const getPhoneModels = async (req, res) => {
         client.release();
     }
 };
-// const getPhoneModels = async (req, res) => {
-//     const { brand } = req.params; // Brand is passed as a URL parameter
-//     const { model, storage, ram } = req.body; // Model, storage, and RAM are passed in the request body
-//     const client = await pool.connect();
-
-//     try {
-//         // Check if the brand exists and fetch its models
-//         const models = await client.query(
-//             `SELECT DISTINCT phone_model AS model FROM "Phone" WHERE phone_brand = $1`,
-//             [brand]
-//         );
-
-//         // If no models exist for the brand, return an error
-//         if (models.rows.length === 0 && !model) {
-//             return res.status(404).json({ error: "No models found for the selected brand." });
-//         }
-
-//         // If a new model is provided in the request body, insert it into the Phone table
-//         if (model) {
-//             const existingModel = await client.query(
-//                 `SELECT * FROM "Phone" WHERE phone_brand = $1 AND phone_model = $2`,
-//                 [brand, model]
-//             );
-
-//             if (existingModel.rows.length === 0) {
-//                 // Insert the new model into the Phone table
-//                 await client.query(
-//                     `INSERT INTO "Phone" (phone_brand, phone_model, storage, ram) 
-//                      VALUES ($1, $2, $3, $4)`,
-//                     [brand, model, storage || null, ram || null]
-//                 );
-
-//                 return res.status(201).json({ message: `New model '${model}' added to the brand '${brand}'.` });
-//             } else {
-//                 return res.status(400).json({ error: `Model '${model}' already exists for the brand '${brand}'.` });
-//             }
-//         }
-
-//         // Return the list of models for the brand
-//         res.status(200).json(models.rows);
-//     } catch (error) {
-//         console.error("Error while fetching or inserting phone models:", error);
-//         res.status(500).json({ error: "Failed to fetch or insert phone models. Please try again." });
-//     } finally {
-//         client.release();
-//     }
-// };
-
-
 
 // get all storage variants of a model
-
-
 const getStorageVariants = async (req, res) => {
     const { model } = req.params;
     const client = await pool.connect();
@@ -361,6 +310,29 @@ const getStorageVariants = async (req, res) => {
     }
 };
 
+// get phone details based on phone brand and model
+const getPhoneDetailsByBrandAndModel = async (req, res) => {
+    const { brand, model } = req.params;
+    const client = await pool.connect();
+    try {
+        const phoneDetails = await client.query(
+            `SELECT * FROM "Phone" WHERE phone_brand = $1 AND phone_model = $2`,
+            [brand, model]
+        );
+
+        if (phoneDetails.rows.length === 0) {
+            return res.status(404).json({ error: "No phone details found for the selected brand and model." });
+        }
+
+        res.status(200).json(phoneDetails.rows[0]);
+    } catch (error) {
+        console.error("Error while fetching phone details:", error);
+        res.status(500).json({ error: "Failed to fetch phone details. Please try again." });
+    } finally {
+        client.release();
+    }
+};
+
 export { 
     uploadPhone, 
     getAllPhones, 
@@ -371,5 +343,6 @@ export {
     deletePhone,
     getPhoneBrands,
     getPhoneModels,
-    getStorageVariants
+    getStorageVariants,
+    getPhoneDetailsByBrandAndModel
 };
