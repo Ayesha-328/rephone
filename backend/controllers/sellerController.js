@@ -94,7 +94,7 @@ const loginSeller = async (req, res) => {
 
         res.status(200).json({ message: "Login successful!" ,
             userId: user.rows[0].userid,
-           
+            sellerId: seller.rows[0].sellerid,      
         });
     } catch (error) {
         console.error("Error during seller login:", error);
@@ -251,32 +251,97 @@ const deleteSellerProfile = async (req, res) => {
     }
 }
 
-// get all sellers
-const getAllSellers = async (req, res) => {
+// get all listed phones of a seller
+const getSellerPhones = async (req, res) => {
+    const { sellerId } = req.params;
     const client = await pool.connect();
     try {
-        const sellers = await client.query(`SELECT u.name, u."phoneNumber", u.city, u.area, u.street, u."houseNumber", u."nearestLandmark", u.email, s."sellerType", s."profilePic"
-             FROM "User" u JOIN "Seller" s ON u.userid = s.userid`);
+        const phones = await client.query(
+            `SELECT lp.*, 
+            p.*
+             FROM "ListedProduct" lp
+             LEFT JOIN "Phone" p ON lp."phoneId" = p."phoneId"
+             WHERE lp."sellerId" = $1`,
+            [sellerId]
+        );
 
-        if (sellers.rows.length === 0) {
-            return res.status(404).json({ error: "No sellers found" });
+        if (phones.rows.length === 0) {
+            return res.status(404).json({ error: "No phones found for this seller" });
         }
-
-        // Format the profile picture
-        sellers.rows.forEach(seller => {
-            if (seller.profilePic) {
-                seller.profilePic = Buffer.from(seller.profilePic).toString('base64');
-            }
+// format the phone images
+        phones.rows.forEach(product => {
+            product.phoneImage = product.phoneImage 
+            ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
+            : [];
         });
 
-        res.status(200).json(sellers.rows);
+        res.status(200).json(phones.rows);
     } catch (error) {
-        console.error("Error while fetching all sellers:", error);
-        res.status(500).json({ error: "An error occurred while fetching all sellers" });
+        console.error("Error while fetching seller phones:", error);
+        res.status(500).json({ error: "An error occurred while fetching seller phones" });
     } finally {
         client.release();
     }
 }
+
+// get all orders of a seller
+const getSellerOrders = async (req, res) => {
+    const { sellerId } = req.params;
+    const client = await pool.connect();
+    try {
+        const orders = await client.query(
+            `SELECT
+  o."orderId",
+  o."orderStatus",
+  o."orderDate",
+
+  u."name" AS buyerName,
+  u."email" AS buyerEmail,
+  u."phoneNumber" AS buyerPhoneNumber,
+  u."city" AS buyerCity,
+
+  SUM(oi."unitPrice") AS sellerTotalPrice,
+
+  json_agg(
+    json_build_object(
+      'productId', lp."productid",
+      'color', lp."color",
+      'status', lp."status",
+      'isSold', lp."isSold",
+      'phoneImages', lp."phoneImage",
+      'imeiNo', lp."imeiNumber",
+      'brand', p."phone_brand",        -- Now coming from Phone table
+      'model', p."phone_model"         -- Now coming from Phone table
+    )
+  ) AS soldProducts
+
+FROM "SubOrder" so
+INNER JOIN "Order" o ON so."orderId" = o."orderId"
+INNER JOIN "User" u ON o."userId" = u."userid"
+INNER JOIN "OrderItem" oi ON oi."subOrderId" = so."subOrderId"
+INNER JOIN "ListedProduct" lp ON oi."productId" = lp."productid"
+INNER JOIN "Phone" p ON lp."phoneId" = p."phoneId"   -- new join with Phone
+
+WHERE so."sellerId" = $1
+GROUP BY o."orderId", o."orderStatus", o."orderDate", u."name", u."email", u."phoneNumber", u."city"
+ORDER BY o."orderDate" DESC;
+`,
+            [sellerId]
+        );
+
+        if (orders.rows.length === 0) {
+            return res.status(404).json({ error: "No orders found for this seller" });
+        }
+
+        res.status(200).json(orders.rows);
+    } catch (error) {
+        console.error("Error while fetching seller orders:", error);
+        res.status(500).json({ error: "An error occurred while fetching seller orders" });
+    } finally {
+        client.release();
+    }
+}
+
 
 
 
@@ -286,5 +351,6 @@ export {
     getSellerProfile , 
     updateSellerProfile, 
     deleteSellerProfile, 
-    getAllSellers
+    getSellerPhones,
+    getSellerOrders
 };
