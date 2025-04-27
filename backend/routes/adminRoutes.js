@@ -1,5 +1,5 @@
 import express from 'express';
-import {registerAdmin, loginAdmin, getAdminDashboardAnalytics, getVerificationRequestsList, getVerificationStatus, verifyPhone, getVerifiedPhonesList} from '../controllers/adminController.js';
+import {registerAdmin, loginAdmin, getAdminDashboardAnalytics, getVerificationRequestsList, getVerificationStatus, verifyPhone, getVerifiedPhonesList, getSellersList, getAllOrders} from '../controllers/adminController.js';
 import { validateAdminRegistration, validateLogin } from '../middlewares/validation.js';
 import { protectAdmin } from '../middlewares/authMiddleware.js';
 
@@ -27,5 +27,11 @@ router.put('/verify/:imei', protectAdmin, verifyPhone)
 
 // get the list of all the verified phones along with the details of the admin who verified it
 router.get('/verified-phones', protectAdmin, getVerifiedPhonesList)
+
+// get the list of all sellers
+router.get('/sellers', protectAdmin, getSellersList)
+
+// get the list of all orders
+router.get('/orders', protectAdmin, getAllOrders)
 
 export default router;
