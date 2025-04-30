@@ -143,7 +143,7 @@ const getVerifiedPhones = async (req, res) => {
              LEFT JOIN "Phone" p ON lp."phoneId" = p."phoneId"
              LEFT JOIN "Seller" s ON lp."sellerId" = s.sellerid
              LEFT JOIN "User" u ON s.userid = u.userid
-             WHERE lp.status = 'verified' && lp."isSold" = false`
+             WHERE lp.status = 'verified' AND lp."isSold" = false`
         );
         
         // format the phone images
