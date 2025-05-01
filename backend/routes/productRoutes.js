@@ -13,6 +13,7 @@ import { uploadPhone,
 } from '../controllers/productController.js';
 import { validateUploadPhone } from '../middlewares/validation.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import { uploadPhoneImages } from '../middlewares/uploadPhoneImage.js';
 // import { getProducts, getProductById, deleteProduct, createProduct, updateProduct, createProductReview } from '../controllers/productController.js';
 
 
@@ -31,7 +32,7 @@ router.get('/storage/:model', getStorageVariants);
 router.get('/details/:brand/:model', getPhoneDetailsByBrandAndModel);
 
 // Seller uplaod phone
-router.post('/upload', protect,validateUploadPhone, uploadPhone);
+router.post('/upload', protect,uploadPhoneImages, validateUploadPhone, uploadPhone);
 
 // get all phones
 router.get('/all', getAllPhones);

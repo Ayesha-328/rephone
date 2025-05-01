@@ -8,53 +8,61 @@ const uploadPhone = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     const user = req.user;
-    const { brand, model, price, imei, color, image } = req.body;
+    const { brand, model, price, imei, color } = req.body;
+
+    // Get array of image URLs from uploaded files (or empty if none provided)
+    const phoneImages = req.files ? req.files.map(file => file.path) : [];
+
     const client = await pool.connect();
 
     try {
-        await client.query("BEGIN"); // Start transaction
+        await client.query("BEGIN");
 
-        // if the phone brand and model exists in phone table
+        // Check if phone brand and model exists
         const phoneInfo = await client.query(
             `SELECT * FROM "Phone" WHERE phone_brand = $1 AND phone_model = $2`,
             [brand, model]
         );
+
         if (phoneInfo.rows.length === 0) {
-            return res.status(400).json({ message: "Phone info can not be found!!"});
+            return res.status(400).json({ message: "Phone info cannot be found!" });
         }
 
-        console.log(phoneInfo.rows[0].phoneId);
-
-        // check if the phone with imei number exists in ListedProduct table
+        // Check IMEI uniqueness
         const existingPhone = await client.query(
             `SELECT * FROM "ListedProduct" WHERE "imeiNumber" = $1`,
             [imei]
         );
+
         if (existingPhone.rows.length > 0) {
             return res.status(400).json({ message: "Phone with this IMEI number already exists!" });
         }
 
+        // Insert phone with images array
         const uploadPhone = await client.query(
-            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage","color", "price") 
-         VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
-            [user.sellerid, phoneInfo.rows[0].phoneId, imei, image, color, price]
+            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage", "color", "price") 
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [user.sellerid, phoneInfo.rows[0].phoneId, imei, phoneImages, color, price]
         );
 
-        const productId = uploadPhone.rows[0].productid;
-        await client.query("COMMIT"); // Commit transaction
+        await client.query("COMMIT");
 
-        res.status(201).json({ message: `Phone ${productId} uploaded successfully!`, phone : uploadPhone.rows[0]
+        res.status(201).json({
+            message: `Phone uploaded successfully!`,
+            phone: uploadPhone.rows[0]
         });
 
     } catch (error) {
-        await client.query("ROLLBACK"); // Rollback on error
-        console.error("Error during uploading phone:", error);
+        await client.query("ROLLBACK");
+        console.error("Error during phone upload:", error);
         res.status(500).json({ error: "Product upload failed. Please try again." });
     } finally {
         client.release();
     }
 };
+
 
 // get all phones with their details
 const getAllPhones = async (req, res) => {
@@ -70,14 +78,6 @@ const getAllPhones = async (req, res) => {
              LEFT JOIN "Seller" s ON lp."sellerId" = s.sellerid
              LEFT JOIN "User" u ON s.userid = u.userid`
         );
-
-        // format the phone images
-        products.rows.forEach(product => {
-            product.profilePic = product.profilePic ? product.profilePic.toString('base64') : null;
-            product.phoneImage = product.phoneImage 
-            ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
-            : [];
-        });
 
 
         res.status(200).json(products.rows);
@@ -112,16 +112,7 @@ const getPhoneDetails = async (req, res) => {
 
         const product = phoneDetails.rows[0];
 
-        // format the phone images
-        const phoneDetailsformatted = {
-            ...product,
-            profilePic: product.profilePic ? product.profilePic.toString() : null,
-            phoneImage: product.phoneImage
-            ? product.phoneImage.map(imageBuffer => imageBuffer.toString()) 
-            : []
-        };
-
-        res.status(200).json(phoneDetailsformatted);
+        res.status(200).json(product);
     } catch (error) {
         console.error("Error during getting phone details:", error);
         res.status(500).json({ error: "Failed to get phone details. Please try again." });
@@ -145,14 +136,7 @@ const getVerifiedPhones = async (req, res) => {
              LEFT JOIN "User" u ON s.userid = u.userid
              WHERE lp.status = 'verified' AND lp."isSold" = false`
         );
-        
-        // format the phone images
-        verifiedPhones.rows.forEach(product => {
-            product.profilePic = product.profilePic ? product.profilePic.toString('base64') : null;
-            product.phoneImage = product.phoneImage 
-            ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
-            : [];
-        });
+      
         res.status(200).json(verifiedPhones.rows);
     } catch (error) {
         console.error("Error during getting all verified phones:", error);
@@ -178,14 +162,6 @@ const getPendingPhones = async (req, res) => {
              WHERE lp.status = 'pending'`
         );
 
-        // format the phone images
-        pendingPhones.rows.forEach(product => {
-            product.profilePic = product.profilePic ? product.profilePic.toString('base64') : null;
-            product.phoneImage = product.phoneImage 
-            ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
-            : [];
-        });
-
         res.status(200).json(pendingPhones.rows);
     } catch (error) {
         console.error("Error during getting all pending phones:", error);
@@ -200,7 +176,10 @@ const updatePhone = async (req, res) => {
     const client = await pool.connect();
     try {
         const productId = req.params.id;
-        const { imei, image } = req.body;
+        const { imei } = req.body;
+        // Get array of image URLs from uploaded files (or empty if none provided)
+    const image = req.files ? req.files.map(file => file.path) : [];
+
         const existingPhone = await client.query(
             `SELECT "phoneImage" FROM "ListedProduct" WHERE productId = $1`,
             [productId]
