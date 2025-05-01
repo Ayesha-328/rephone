@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const SellerHeader = ({ sellerName, profilePicture }) => {
   return (
     <header className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
@@ -26,7 +26,7 @@ const SellerHeader = ({ sellerName, profilePicture }) => {
           {/* Profile section */}
           <div className="flex items-center space-x-4">
             <span className="text-gray-700">{sellerName}</span>
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#003566]">
+            <div className=" h-10 rounded-full overflow-hidden border-2 border-[#003566]">
               {profilePicture ? (
                 <img
                   src={profilePicture}

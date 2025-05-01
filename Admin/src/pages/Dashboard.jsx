@@ -49,13 +49,13 @@ const Dashboard = () => {
     };
   }, [navigate]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading-spinner">Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
+        <h1 className="dashboard-title">Admin Dashboard</h1>
       </div>
       <div className="stats-grid">
         <div className="stats-card">
@@ -69,7 +69,7 @@ const Dashboard = () => {
         <div className="stats-card">
           <h3>Total Verified Phones</h3>
           <p className="stats-value">{stats.totalVerifiedPhones}</p>
-        </div><br></br>
+        </div>
         <div className="stats-card">
           <h3>Ongoing Disputes</h3>
           <p className="stats-value">{stats.ongoingDisputes || '12'}</p>

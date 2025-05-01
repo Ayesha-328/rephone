@@ -1,103 +1,126 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Footer from '../../../components/Footer';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useSellerAuth } from '../context/SellerAuthContext';
+import SellerLayout from '../components/SellerLayout';
 
-const FeatureCard = ({ title, description, icon, link }) => (
+const OptionCard = ({ title, description, icon, link }) => (
   <Link
     to={link}
-    className="bg-white/10 p-6 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
+    className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 transform hover:scale-105 border border-gray-200"
   >
-    <div className="text-[#FF9F1C] mb-4">{icon}</div>
-    <h3 className="text-xl font-bold mb-2">{title}</h3>
-    <p className="text-gray-300">{description}</p>
+    <div className="text-gray-800 mb-4 text-3xl">{icon}</div>
+    <h3 className="text-xl font-bold mb-2 text-gray-900">{title}</h3>
+    <p className="text-gray-700">{description}</p>
   </Link>
 );
 
 const SellerHomePage = () => {
-  const navigate = useNavigate();
+  const { seller, loading } = useSellerAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('sellerToken');
-    navigate('/seller/login');
-  };
+  useEffect(() => {
+    if (seller && seller.sellerId) {
+      console.log('Current seller in HomePage:', seller);
+    }
+  }, [seller]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-black">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!seller) {
+    return null;
+  }
+
+  const isBusiness = seller.sellerType === 'business';
+  const listingLimit = isBusiness ? 'Unlimited' : '1';
+  const remainingListings = isBusiness ? 'Unlimited' : Math.max(0, 1 - 0); // Modify logic as needed
+
+  // Dummy analytics (replace with API data as needed)
+  const totalListings = 12;
+  const pendingOrders = 3;
+  const completedOrders = 9;
+  const totalEarnings = 15400;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow bg-[#003566] text-white p-8 pt-28">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Seller Dashboard</h1>
-              <p className="text-xl text-gray-300">
-                Manage your phone listings and business on Rephone
-              </p>
+    <SellerLayout>
+      <div className="min-h-[calc(100vh-4rem)] w-full p-6 bg-gray-50 text-black">
+        <div className="grid gap-6">
+
+          {/* Welcome Section */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow">
+            <h1 className="text-3xl font-bold mb-2 text-gray-900">Welcome, {seller.name}!</h1>
+            <p className="text-gray-700">Manage your seller account and listings here.</p>
+          </div>
+
+          {/* Analytics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+              <h4 className="text-sm text-gray-500">Total Listings</h4>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{totalListings}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-white/10 hover:bg-white/20 text-black px-6 py-2 rounded-full transition duration-300"
-            >
-              Logout
-            </button>
+            <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+              <h4 className="text-sm text-gray-500">Pending Orders</h4>
+              <p className="text-2xl font-bold text-yellow-600 mt-1">{pendingOrders}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+              <h4 className="text-sm text-gray-500">Completed Orders</h4>
+              <p className="text-2xl font-bold text-green-600 mt-1">{completedOrders}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+              <h4 className="text-sm text-gray-500">Total Earnings</h4>
+              <p className="text-2xl font-bold text-blue-600 mt-1">₹{totalEarnings.toLocaleString()}</p>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard
-              title="List a Phone"
-              description="Add a new phone listing with detailed information and photos"
-              icon={
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              }
-              link="/seller/SellerDashboard"
-            />
+          {/* Main Grid: Account Info + Quick Actions */}
+          <div className="grid lg:grid-cols-2 gap-6">
 
-            <FeatureCard
-              title="Register Business"
-              description="Upgrade to a business account for more features and benefits"
-              icon={
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              }
-              link="/register"
-            />
-          </div>
+            {/* Account Status */}
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow">
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">Account Status</h2>
+                <div className="space-y-2">
+                  <p className="text-gray-600">Account Type: <span className="font-semibold text-gray-800">{isBusiness ? 'Business' : 'Individual'}</span></p>
+                  <p className="text-gray-600">Listing Limit: <span className="font-semibold text-gray-800">{listingLimit}</span></p>
+                  <p className="text-gray-600">Remaining Listings: <span className="font-semibold text-gray-800">{remainingListings}</span></p>
+                </div>
+              </div>
+            </div>
 
-          <div className="mt-12 bg-white/10 p-8 rounded-lg backdrop-blur-sm">
-            <h2 className="text-2xl font-bold mb-4">Quick Tips</h2>
-            <ul className="space-y-3 text-gray-300">
-              <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#FF9F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Take clear photos of your phones in good lighting
-              </li>
-              <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#FF9F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Provide accurate descriptions including any defects
-              </li>
-              <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#FF9F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Set competitive prices based on phone condition
-              </li>
-              <li className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-[#FF9F1C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Respond quickly to buyer inquiries
-              </li>
-            </ul>
+            {/* Quick Actions */}
+            <div className="space-y-6">
+              <div className="grid gap-6">
+                <OptionCard
+                  title="List a Phone"
+                  description="Add a new phone to your inventory"
+                  icon="📱"
+                  link="/seller/SellerDashboard"
+                />
+                {!isBusiness && (
+                  <OptionCard
+                    title="Register as Business"
+                    description="Upgrade to a business account"
+                    icon="🏢"
+                    link="/seller/BusinessRegister"
+                  />
+                )}
+                <OptionCard
+                title="Selling Guidelines"
+                description="Learn how to list responsibly and check device IMEI"
+                icon="📘"
+                link="/seller/guidelines"/>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
-      <Footer />
-    </div>
+    </SellerLayout>
   );
 };
 
-export default SellerHomePage; 
+export default SellerHomePage;

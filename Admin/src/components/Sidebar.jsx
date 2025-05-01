@@ -16,6 +16,7 @@ const Sidebar = () => {
       <div className="sidebar-content">
         <div className="sidebar-logo">
           <h1>Rephone</h1>
+          <hr></hr>
         </div>
         <nav className="sidebar-nav">
           <NavLink to="/dashboard">
@@ -26,6 +27,12 @@ const Sidebar = () => {
           </NavLink>
           <NavLink to="/products">
             Verified Products
+          </NavLink>
+          <NavLink to="/SellerList">
+            Seller List
+          </NavLink>
+          <NavLink to="/Order">
+            Orders
           </NavLink>
         </nav>
       </div>

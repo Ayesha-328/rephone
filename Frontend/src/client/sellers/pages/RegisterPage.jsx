@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Footer from '../components/Footer';
+import Footer from '../../../components/Footer';
 
 const PricingCard = ({ title, price, features, recommended }) => (
   <div className={`bg-white/10 p-6 rounded-lg backdrop-blur-sm ${recommended ? 'border-2 border-[#FF9F1C] relative' : ''}`}>

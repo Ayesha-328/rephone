@@ -1,10 +1,12 @@
 import React from 'react';
 import '../index.css';
 import Footer from '../components/Footer';
+import { Header } from "../components/Header";  // Ensure this path is correct
 
 const AboutPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
+      <Header/>
       <div className="flex-grow bg-[#003566] text-white p-8 pt-28">
         <div className=" mx-auto">
           <h1 className="text-4xl font-bold mb-12 text-center">About Rephone</h1>

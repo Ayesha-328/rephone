@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../index.css';
 import Footer from '../components/Footer';
+import { Header } from "../components/Header";  // Ensure this path is correct
+
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +28,7 @@ const ContactPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Header/>
       <div className="flex-grow bg-[#003566] text-white p-8 pt-28">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-8 text-center">Contact Us</h1>

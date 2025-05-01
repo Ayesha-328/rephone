@@ -23,7 +23,7 @@ export const Header = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#002647] to-[#003566] shadow-lg"
+      className="fixed top-0 left-0 right-0 z-50 text-white bg-gradient-to-r from-[#002647] to-[#003566] shadow-lg"
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-20">
@@ -43,7 +43,7 @@ export const Header = () => {
                   to={item.path}
                   className={`text-lg font-medium ${
                     location.pathname === item.path
-                      ? "text-[#FF9F1C] border-b-2 border-[#FF9F1C]"
+                      ? "text-[white] border-b-2 border-[#FF9F1C]"
                       : "text-white hover:text-[#FF9F1C] hover:border-b-2 hover:border-[#FF9F1C]"
                   } transition-all duration-200 py-2`}
                 >
@@ -59,7 +59,7 @@ export const Header = () => {
                 placeholder="Search..."
                 className="w-64 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-transparent"
               />
-              <button className="absolute right-3 text-white/70 hover:text-[#FF9F1C]">
+              <button className="absolute right-3 text-black/70 hover:text-[#FF9F1C]">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>

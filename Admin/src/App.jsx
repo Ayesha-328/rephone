@@ -9,6 +9,8 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import './App.css';
 import ListedProducts from './pages/ListedProducts';
+import Order from './pages/Orders';
+import SellerList from './pages/SellerList';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem('adminId')  // Check if adminId exists
@@ -62,6 +64,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ListedProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Order"
+          element={
+            <ProtectedRoute>
+              < Order/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/SellerList"
+          element={
+            <ProtectedRoute>
+              < SellerList/>
             </ProtectedRoute>
           }
         />

@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginSeller, registerSeller, getSellerProfile, updateSellerProfile, deleteSellerProfile, getAllSellers} from '../controllers/sellerController.js';
+import { loginSeller, registerSeller, getSellerProfile, updateSellerProfile, deleteSellerProfile, getSellerPhones, getSellerOrders} from '../controllers/sellerController.js';
 import { validateRegistration, validateLogin, validateUpdateSeller } from '../middlewares/validation.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -20,7 +20,10 @@ router.put('/update/:query',protect, validateUpdateSeller, updateSellerProfile)
 // delete seller profile
 router.delete('/delete/:query',protect, deleteSellerProfile)
 
-// get all sellers
-router.get('/all', protect, getAllSellers)
+// get all listed phones of a seller
+router.get('/phones/:sellerId', protect, getSellerPhones)
+
+// get all orders of a seller
+router.get('/orders/:sellerId', protect, getSellerOrders)
 
 export default router;
