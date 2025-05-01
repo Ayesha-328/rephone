@@ -105,8 +105,6 @@ const getAdminDashboardAnalytics = async (req, res) => {
     // tatal verified phones
     const totalVerifiedPhones = await pool.query('SELECT COUNT(*) FROM "ListedProduct" WHERE status = "verified"');
 
-    // ongoing disputes
-
     // total transactions today
 
     // total revenue generated
@@ -136,13 +134,6 @@ const getVerificationRequestsList = async (req, res) => {
              LEFT JOIN "Seller" s ON lp."sellerId" = s.sellerid
              LEFT JOIN "User" u ON s.userid = u.userid
              WHERE lp.status = 'pending'`);
-
-        // format the phone images
-        verificationRequests.rows.forEach(product => {
-            product.phoneImage = product.phoneImage
-                ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64'))
-                : [];
-        });
 
 
         res.status(200).json({ message: "Verification requests", requests: verificationRequests.rows });
@@ -175,13 +166,7 @@ const getVerificationStatus = async (req, res) => {
             return res.status(404).json({ error: "Phone not found." });
         }
 
-        // Format the phone images
-        phoneDetails.rows.forEach(product => {
-            product.phoneImage = product.phoneImage
-                ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64'))
-                : [];
-        });
-
+       
         // Call the imei.info API to get the verification status
         const apiResponse = await fetch(
             `https://dash.imei.info/api/check/27/?API_KEY=${process.env.IMEI_INFO_API_KEY}&imei=${imei}`
@@ -289,13 +274,7 @@ const getVerifiedPhonesList = async (req, res) => {
              LEFT JOIN "Admin" a ON lp."approvedBy" = a."adminId"
              WHERE lp.status = 'verified'`);
 
-        // format the phone images
-        verifiedPhones.rows.forEach(product => {
-            product.phoneImage = product.phoneImage
-                ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64'))
-                : [];
-        });
-
+        
         res.status(200).json({ message: "Verified phones list", phones: verifiedPhones.rows });
     } catch (error) {
         console.error("Error fetching verified phones:", error);
@@ -315,12 +294,6 @@ const getSellersList = async (req, res) => {
              FROM "Seller" s
              LEFT JOIN "User" u ON s.userid = u.userid`);
 
-        // formatting the profile pic
-        sellers.rows.forEach(seller => {
-            if (seller.profilePic) {
-                seller.profilePic = Buffer.from(seller.profilePic).toString('base64');
-            }
-        });
 
         res.status(200).json({ message: "Sellers list", sellers: sellers.rows });
     } catch (error) {

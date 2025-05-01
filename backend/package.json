@@ -15,6 +15,7 @@
     "@sfpy/node-core": "^0.2.5",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -22,6 +23,8 @@
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "pg": "^8.13.3"
   }
 }
