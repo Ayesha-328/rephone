@@ -2,8 +2,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SellerDashboard } from "../client/sellers/pages/SellerDasboard";
-// import { SellerForm } from "../client/sellers/components/sellerForm";
+
 export const Header = () => {
   const [activeItem, setActiveItem] = useState("home");
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -22,7 +21,7 @@ export const Header = () => {
         initial={{ y: -100, opacity: 0 }} // Moves navbar 100px up and makes it invisible
         animate={{ y: 0, opacity: 1 }} // Brings it down to its original position
         transition={{ duration: 1, ease: "easeOut" }} // Controls speed and smoothness 
-        className="text-white w-full flex ml-2 fixed left-0 justify-between items-center top-6 lg:top-10">
+        className="text-white w-full  z-100 flex ml-2 fixed left-0 justify-between items-center top-6 lg:top-10">
         <button
           onClick={() => setMenuOpen(!isMenuOpen)}
           className="md:hidden items-center justify-center bg-transparent w-18 h-16 mt-0"
@@ -34,7 +33,7 @@ export const Header = () => {
         <div className="max-w-[40%] min-h-[50px] bg-[#003566] container mx-auto justify-center items-center p-2 rounded-tl-2xl rounded-bl-2xl drop-shadow-[6px_-6px_3px_rgba(244,244,244,0.4),-6px_6px_4px_rgba(255,159,28,0.6)] hidden md:flex">
 
           {/* Desktop Menu */}
-          <ul className="hidden md:flex space-x-3 gap-6 font-[Merriweather] text-xl font-bold cursor-pointer">
+          {/* <ul className="hidden md:flex space-x-3 gap-6 font-[Merriweather] text-xl font-bold cursor-pointer">
             {["home", "About Us", "Services", "Catagory"].map((item) => (
               <li
                 key={item}
@@ -45,9 +44,30 @@ export const Header = () => {
                 onClick={() => handleActiveItem(item)}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}
+                
+              </li>
+            ))}
+          </ul> */}
+          <ul className="hidden md:flex space-x-3 gap-6 font-[Merriweather] text-xl font-bold cursor-pointer">
+            {["home", "about", "services", "category"].map((item) => (
+              <li
+                key={item}
+                className={`p-2 border-b-4 ${activeItem === item
+                  ? "border-[#FF9F1C]"
+                  : "border-transparent"
+                  } hover:border-[#000C1C] transition-all`}
+                onClick={() => handleActiveItem(item)}
+              >
+                <Link
+                  to={`/${item}`}
+                  className="!text-white visited:!text-white hover:!text-white no-underline"
+                >
+                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                </Link>
               </li>
             ))}
           </ul>
+
 
 
           {/* Hamburger Icon for Mobile */}
@@ -85,10 +105,13 @@ export const Header = () => {
 
 
             <li className="bg-[#FF9F1C] w-40 h-16 flex justify-center items-center rounded-tr-2xl rounded-br-2xl gap-6 -mr-7">
-              <Link to="/SellerDashboard">
+              <Link to="/Checkout">
                 <img src="/entrance.png" className="w-10 h-10 cursor-pointer" alt="Entrance" />
               </Link>
-              <img src="/bag.png" className="w-10 h-10 cursor-pointer" />
+
+              <Link to="/Cart">
+                <img src="/bag.png" className="w-10 h-10 cursor-pointer" />
+              </Link>
             </li>
           </ul>
         </div>
@@ -156,3 +179,4 @@ export const Header = () => {
     </>
   );
 };
+

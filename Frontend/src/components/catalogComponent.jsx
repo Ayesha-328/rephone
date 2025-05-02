@@ -1,100 +1,55 @@
-// import React, { useEffect, useState } from 'react';
 
-// const ProductCatalog = () => {
-//   const [products, setProducts] = useState([]);
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-//   useEffect(() => {
-//     fetch('http://localhost:5000/products')
-//       .then((res) => res.json())
-//       .then((data) => setProducts(data))
-//       .catch((error) => console.error('Error fetching products:', error));
-//   }, []); // Fetch only once when component loads
-
-//   return (
-//     <div>
-//       <h2>Product Catalog</h2>
-//       <div className="product-list">
-//         {products.map((product) => (
-//           <div key={product._id} className="product-card">
-//             <img src={product.imageUrl} alt={product.name} />
-//             <h3>{product.name}</h3>
-//             <p>{product.description}</p>
-//             <p>${product.price}</p>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ProductCatalog;
-import React, { useEffect, useState } from 'react';
-
-const ProductCatalog = () => {
-  // Default products
-  const initialProducts = [
-    {
-        _id: '1',
-        name: 'iPhone 13 Pro',
-        description: '128GB, Graphite, Excellent Condition',
-        price: 899,
-        imageUrl: '/catalogAssests/infinix.jpeg',
-    },
-    {
-      _id: '2',
-      name: 'Samsung Galaxy S21',
-      description: '256GB, Phantom Black, Slightly Used',
-      price: 749,
-      imageUrl: '/catalogAssests/Oppo.jpeg',
-    },
-    {
-      _id: '3',
-      name: 'Google Pixel 6',
-      description: '128GB, Stormy Black, Brand New',
-      price: 599,
-      imageUrl: '/catalogAssests/Tecno.jpeg',
-    },
-    {
-      _id: '4',
-      name: 'OnePlus 9',
-      description: '256GB, Winter Mist, Open Box',
-      price: 679,
-      imageUrl: '/catalogAssests/Vivo.jpeg',
-    },
-    {
-      _id: '5',
-      name: 'Xiaomi Mi 11',
-      description: '256GB, Midnight Gray, Like New',
-      price: 499,
-      imageUrl: 'https://via.placeholder.com/150',
-    },
-  ];
-
-  const [products, setProducts] = useState(initialProducts);
-
-  useEffect(() => {
-    // Future backend fetch logic can be re-enabled if needed
-    // fetch('http://localhost:5000/products')
-    //   .then((res) => res.json())
-    //   .then((data) => setProducts(data))
-    //   .catch((error) => console.error('Error fetching products:', error));
-  }, []); // Runs once when component mounts
+const ProductCatalog = ({ products, className }) => {
+  if (!Array.isArray(products) || products.length === 0) {
+    return <div className="text-center mt-10">No products found.</div>;
+  }
 
   return (
-    <div className='relative top-180'>
-      <h2 className="text-2xl font-bold text-center my-4">Product Catalog</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4">
+    <div className={className}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-18 gap-y-10 pl-90 pt-10">
         {products.map((product) => (
-          <div key={product._id} className="border p-4 rounded-3xl shadow-md text-center w-50">
-            <img src={product.imageUrl} alt={product.name} className="w-20 h-32 mx-auto" />
-            <h3 className="text-md font-semibold mt-2">{product.name}</h3>
-            <p className="text-md text-gray-600">{product.description}</p>
-            <p className="text-md font-bold text-orange-500">${product.price}</p>
-          </div>
+          <Link to={`/product/${product.productid}`} key={product.productid}>
+            <div className="border p-2 rounded-3xl shadow-md text-center w-58 h-75 bg-[#003566]">
+              {product.phone_model && (
+                <p className="mt-1 mb-1 text-white font-[Montserrat] text-lg font-semibold text-md">{product.phone_model}</p>
+              )}
+              {/* {product.phoneImage && product.phoneImage[0] ? (
+                <img
+                  src={`data:image/jpeg;base64,${product.phoneImage[0]}`}
+                  alt={`Product image ${product.productid}`}
+                  className="w-43 h-55 mx-auto rounded-3xl border-3 border-[#FFFFFF]"
+                />
+              ) : (
+                <div className="w-43 h-55 mx-auto flex items-center justify-center bg-gray-200 rounded-3xl border-3 border-[#FFFFFF] text-gray-600 text-sm">
+                  No Image Available
+                </div>
+              )} */}
+               {product.phoneImage && product.phoneImage[0] ? (
+               <img
+               // Use the URL directly as the src
+               src={product.phoneImage[0]}
+               alt={`Product image ${product.phone_model || product.productid}`} // Use phone_model for alt text if available
+               className="w-43 h-55 mx-auto rounded-3xl border-3 border-[#FFFFFF]"
+             />
+              ) : (
+                <div className="w-43 h-55 mx-auto flex items-center justify-center bg-gray-200 rounded-3xl border-3 border-[#FFFFFF] text-gray-600 text-sm">
+                  No Image Available
+                </div>
+              )}
+              {typeof product.price === 'number' && (
+                <p className="text-lg font-medium text-[#FFFFFF] font-[Merriweather] text-right mr-4 mt-2">
+                  ${product.price}
+                </p>
+              )}
+            </div>
+          </Link>
         ))}
       </div>
     </div>
   );
 };
 
-export default ProductCatalog
+export default ProductCatalog;
