@@ -105,8 +105,6 @@ const getAdminDashboardAnalytics = async (req, res) => {
     // tatal verified phones
     const totalVerifiedPhones = await pool.query(`SELECT COUNT(*) FROM "ListedProduct" WHERE status = 'verified'`);
 
-    // ongoing disputes
-
     // total transactions today
 
     // total revenue generated
@@ -168,6 +166,7 @@ const getVerificationStatus = async (req, res) => {
             return res.status(404).json({ error: "Phone not found." });
         }
 
+       
         // Call the imei.info API to get the verification status
         const apiResponse = await fetch(
             `https://dash.imei.info/api/check/27/?API_KEY=${process.env.IMEI_INFO_API_KEY}&imei=${imei}`
@@ -189,25 +188,25 @@ const getVerificationStatus = async (req, res) => {
         // Use setTimeout to delay the verification status API call by 2 seconds
         setTimeout(async () => {
             try {
-            const verificationStatusResponse = await fetch(`https://dash.imei.info/api/search_history/${ulid}`);
-            if (!verificationStatusResponse.ok) {
-                return res.status(500).json({ error: "Failed to fetch verification status history." });
-            }
+                const verificationStatusResponse = await fetch(`https://dash.imei.info/api/search_history/${ulid}`);
+                if (!verificationStatusResponse.ok) {
+                    return res.status(500).json({ error: "Failed to fetch verification status history." });
+                }
 
-            const verificationStatus = await verificationStatusResponse.json();
-            console.log("Verification Status:", verificationStatus);
+                const verificationStatus = await verificationStatusResponse.json();
+                console.log("Verification Status:", verificationStatus);
 
-            // Return the verification status along with phone details
-            res.status(200).json({
-                message: "Phone verification status",
-                phoneDetails: {
-                ...phoneDetails.rows[0],
-                verificationStatus: verificationStatus.result,
-                },
-            });
+                // Return the verification status along with phone details
+                res.status(200).json({
+                    message: "Phone verification status",
+                    phoneDetails: {
+                        ...phoneDetails.rows[0],
+                        verificationStatus: verificationStatus.result,
+                    },
+                });
             } catch (error) {
-            console.error("Error fetching verification status:", error);
-            res.status(500).json({ error: "Failed to fetch verification status." });
+                console.error("Error fetching verification status:", error);
+                res.status(500).json({ error: "Failed to fetch verification status." });
             }
         }, 2000); // Delay of 2 seconds
 
@@ -240,7 +239,7 @@ const verifyPhone = async (req, res) => {
         if (phone.rows.length === 0) {
             return res.status(404).json({ error: "Phone not found." });
         }
-        
+
         // Update the verification status in the database and the verified by admin id
         await client.query(
             `UPDATE "ListedProduct" SET status = $1, "approvedBy"=$2 WHERE "imeiNumber" = $3`,
@@ -275,7 +274,7 @@ const getVerifiedPhonesList = async (req, res) => {
              LEFT JOIN "Admin" a ON lp."approvedBy" = a."adminId"
              WHERE lp.status = 'verified'`);
 
-
+        
         res.status(200).json({ message: "Verified phones list", phones: verifiedPhones.rows });
     } catch (error) {
         console.error("Error fetching verified phones:", error);
@@ -284,6 +283,7 @@ const getVerifiedPhonesList = async (req, res) => {
         client.release();
     }
 }
+
 // get the list of all the sellers
 const getSellersList = async (req, res) => {
     const client = await pool.connect();
@@ -293,6 +293,7 @@ const getSellersList = async (req, res) => {
              s."sellerType"
              FROM "Seller" s
              LEFT JOIN "User" u ON s.userid = u.userid`);
+
 
         res.status(200).json({ message: "Sellers list", sellers: sellers.rows });
     } catch (error) {

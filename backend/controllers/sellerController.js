@@ -11,7 +11,8 @@ const registerSeller = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, phoneNumber, city, area, street, houseNumber, nearestLandmark, email, password, sellerType, profilePicture } = req.body;
+    const { name, phoneNumber, city, area, street, houseNumber, nearestLandmark, email, password, sellerType } = req.body;
+    const profilePicture = req.file ? req.file.path : null;
 
     const client = await pool.connect();
     try {
@@ -40,7 +41,7 @@ const registerSeller = async (req, res) => {
         const sellerResult = await client.query(
             `INSERT INTO "Seller" ("userName", password, userid, "sellerType", "profilePic") 
              VALUES ($1, $2, $3, $4, $5) RETURNING sellerId`,
-            [name, hashedPassword, userId, sellerType, profilePicture || null]
+            [name, hashedPassword, userId, sellerType, profilePicture]
         );
 
         const sellerId = sellerResult.rows[0].sellerid;
@@ -94,8 +95,7 @@ const loginSeller = async (req, res) => {
 
         res.status(200).json({ message: "Login successful!" ,
             userId: user.rows[0].userid,
-            sellerId: seller.rows[0].sellerid,
-           
+            sellerId: seller.rows[0].sellerid,      
         });
     } catch (error) {
         console.error("Error during seller login:", error);
@@ -138,7 +138,7 @@ const updateSellerProfile = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    
+
     const { query } = req.params;
     const {
         name, phoneNumber, city, area,
@@ -150,53 +150,53 @@ const updateSellerProfile = async (req, res) => {
 
     const client = await pool.connect();
     try {
-        await client.query("BEGIN"); // Start transaction
+        await client.query("BEGIN");
 
-        // Update user table
-        const fieldsToUpdate = [];
-        const values = [];
-        let index = 1;
+        // Update "User" table
+        const userFieldsToUpdate = [];
+        const userValues = [];
+        let userIndex = 1;
 
         if (name) {
-            fieldsToUpdate.push(`"name" = $${index++}`);
-            values.push(name);
+            userFieldsToUpdate.push(`name = $${userIndex++}`);
+            userValues.push(name);
         }
         if (phoneNumber) {
-            fieldsToUpdate.push(`"phoneNumber" = $${index++}`);
-            values.push(phoneNumber);
+            userFieldsToUpdate.push(`"phoneNumber" = $${userIndex++}`);
+            userValues.push(phoneNumber);
         }
         if (city) {
-            fieldsToUpdate.push(`"city" = $${index++}`);
-            values.push(city);
+            userFieldsToUpdate.push(`city = $${userIndex++}`);
+            userValues.push(city);
         }
         if (area) {
-            fieldsToUpdate.push(`"area" = $${index++}`);
-            values.push(area);
+            userFieldsToUpdate.push(`area = $${userIndex++}`);
+            userValues.push(area);
         }
         if (street) {
-            fieldsToUpdate.push(`"street" = $${index++}`);
-            values.push(street);
+            userFieldsToUpdate.push(`street = $${userIndex++}`);
+            userValues.push(street);
         }
         if (houseNumber) {
-            fieldsToUpdate.push(`"houseNumber" = $${index++}`);
-            values.push(houseNumber);
+            userFieldsToUpdate.push(`"houseNumber" = $${userIndex++}`);
+            userValues.push(houseNumber);
         }
         if (nearestLandmark) {
-            fieldsToUpdate.push(`"nearestLandmark" = $${index++}`);
-            values.push(nearestLandmark);
+            userFieldsToUpdate.push(`"nearestLandmark" = $${userIndex++}`);
+            userValues.push(nearestLandmark);
         }
         if (email) {
-            fieldsToUpdate.push(`"email" = $${index++}`);
-            values.push(email);
+            userFieldsToUpdate.push(`email = $${userIndex++}`);
+            userValues.push(email);
         }
 
-        if (fieldsToUpdate.length > 0) {
-            values.push(query);
-            const updateQuery = `UPDATE "User" SET ${fieldsToUpdate.join(", ")} WHERE userid = $${index}`;
-            await client.query(updateQuery, values);
+        if (userFieldsToUpdate.length > 0) {
+            userValues.push(query);
+            const userUpdateQuery = `UPDATE "User" SET ${userFieldsToUpdate.join(", ")} WHERE userid = $${userIndex}`;
+            await client.query(userUpdateQuery, userValues);
         }
 
-        // Update seller table
+        // Update "Seller" table
         const sellerFieldsToUpdate = [];
         const sellerValues = [];
         let sellerIndex = 1;
@@ -205,6 +205,7 @@ const updateSellerProfile = async (req, res) => {
             sellerFieldsToUpdate.push(`"sellerType" = $${sellerIndex++}`);
             sellerValues.push(sellerType);
         }
+
         if (profilePicture) {
             sellerFieldsToUpdate.push(`"profilePic" = $${sellerIndex++}`);
             sellerValues.push(profilePicture);
@@ -213,20 +214,22 @@ const updateSellerProfile = async (req, res) => {
         if (sellerFieldsToUpdate.length > 0) {
             sellerValues.push(query);
             const sellerUpdateQuery = `UPDATE "Seller" SET ${sellerFieldsToUpdate.join(", ")} WHERE userid = $${sellerIndex}`;
+            
             await client.query(sellerUpdateQuery, sellerValues);
         }
 
-        await client.query("COMMIT"); // Commit transaction
+        await client.query("COMMIT");
 
         res.status(200).json({ message: "Seller profile updated successfully!" });
     } catch (error) {
-        await client.query("ROLLBACK"); // Rollback on error
+        await client.query("ROLLBACK");
         console.error("Error during seller profile update:", error);
         res.status(500).json({ error: "Profile update failed. Please try again." });
     } finally {
         client.release();
     }
 };
+
 
 // delete seller profile
 const deleteSellerProfile = async (req, res) => {
@@ -252,7 +255,6 @@ const deleteSellerProfile = async (req, res) => {
         client.release();
     }
 }
-
 
 // get all listed phones of a seller
 const getSellerPhones = async (req, res) => {
