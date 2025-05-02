@@ -8,10 +8,12 @@ import { uploadPhone,
     deletePhone,
     getPhoneBrands,
     getPhoneModels,
-    getStorageVariants
+    getStorageVariants,
+    getPhoneDetailsByBrandAndModel
 } from '../controllers/productController.js';
 import { validateUploadPhone } from '../middlewares/validation.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import { uploadPhoneImages } from '../middlewares/uploadPhoneImage.js';
 // import { getProducts, getProductById, deleteProduct, createProduct, updateProduct, createProductReview } from '../controllers/productController.js';
 
 
@@ -26,8 +28,11 @@ router.get('/models/:brand', getPhoneModels);
 // Get storage variants for a specific model
 router.get('/storage/:model', getStorageVariants); 
 
+// get phone details by brand and model
+router.get('/details/:brand/:model', getPhoneDetailsByBrandAndModel);
+
 // Seller uplaod phone
-router.post('/upload', protect,validateUploadPhone, uploadPhone);
+router.post('/upload', protect,uploadPhoneImages, validateUploadPhone, uploadPhone);
 
 // get all phones
 router.get('/all', getAllPhones);
@@ -47,6 +52,8 @@ router.put('/update/:id', protect, updatePhone);
 
 // delete an uploaded phone
 router.delete('/delete/:id', protect, deletePhone);
+
+
 
 
 

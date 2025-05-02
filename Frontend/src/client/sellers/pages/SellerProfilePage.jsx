@@ -117,10 +117,10 @@ const SellerProfilePage = () => {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#FF9F1C] shadow-lg">
                 {seller?.profilePic ? (
                   <img 
-                    src={`data:image/jpeg;base64,${seller.profilePic}`}
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
+                  src={seller.profilePic}
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <span className="text-4xl text-gray-500">

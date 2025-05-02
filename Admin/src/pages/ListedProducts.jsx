@@ -64,17 +64,17 @@ const ListedProducts = () => {
                     ) : (
                         products.map((product) => (
                             <tr key={product.imeiNumber}>
-                                <td>
-                                    {product.phoneImage && product.phoneImage.length > 0 ? (
-                                        <img 
-                                            src={`data:image/jpeg;base64,${product.phoneImage[0]}`}
-                                            alt="Phone"
-                                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <div className="no-image">No Image</div>
-                                    )}
-                                </td>
+                                 <td>
+                    {product.phoneImage && product.phoneImage.length > 0 ? (
+                      <img 
+                        src={product.phoneImage[0]} 
+                        alt="Phone" 
+                        style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <div className="no-image">No Image</div>
+                    )}
+                  </td>
                                 <td>{product.imeiNumber}</td>
                                 <td>{product.phone_brand}</td>
                                 <td>{product.phone_model}</td>

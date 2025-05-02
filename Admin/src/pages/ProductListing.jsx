@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 
-const decodeBase64Hex = (hexString) => {
-  // Remove the \\x prefix and decode the Base64 string
-  const base64String = hexString.replace(/^\\x/, '');
-  const decoded = atob(base64String);
-  return decoded;
-};
 const ProductListing = () => {
   const [verifiedPhones, setVerifiedPhones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,15 +53,14 @@ const ProductListing = () => {
               {verifiedPhones.map((phone) => (
                 <tr key={phone.imeiNumber}>
                   <td>
-                    {/* Check if the phone has image URLs and decode them */}
-                    {phone.phoneImage?.length > 0 ? (
-                      <img
-                        src={decodeBase64Hex(phone.phoneImage[0])} // Decode Hex to Base64 URL
-                        alt="Phone"
-                        width="80"
+                    {phone.phoneImage && phone.phoneImage.length > 0 ? (
+                      <img 
+                        src={phone.phoneImage[0]} 
+                        alt="Phone" 
+                        style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
                       />
                     ) : (
-                      'No Image'
+                      <div className="no-image">No Image</div>
                     )}
                   </td>
                   <td>{phone.imeiNumber}</td>

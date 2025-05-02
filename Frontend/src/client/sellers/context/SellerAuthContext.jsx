@@ -169,26 +169,28 @@ export const SellerAuthProvider = ({ children }) => {
         try {
             setOrdersLoading(true);
             const sellerId = seller?.sellerId || localStorage.getItem('sellerId');
-
+    
             if (!sellerId) {
                 console.error('No sellerId available for fetching orders');
                 setOrdersLoading(false);
-                return;
+                return [];
             }
-
+    
             console.log('Fetching orders for sellerId:', sellerId);
-
+    
             const response = await axios.get(`http://localhost:5000/api/seller/orders/${sellerId}`, {
                 withCredentials: true
             });
-
+    
             console.log('Orders fetched:', response.data);
             setOrders(response.data);
+            return response.data; // Return the data for the component to use
         } catch (error) {
             console.error('Error fetching orders:', error.response?.data || error);
             if (error.response?.status === 404) {
                 setOrders([]);
             }
+            return []; // Return empty array in case of error
         } finally {
             setOrdersLoading(false);
         }

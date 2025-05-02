@@ -54,15 +54,24 @@ const Orders = () => {
                     ))}
                   </td>
                   <td>
-                    {order.soldproducts.map((product, index) => (
-                      <div key={index}>
-                        <strong>{product.model}</strong>
-                        <p>Brand: {product.brand}</p>
-                        <p>IMEI No: {product.imeiNo}</p>
-                        <img src={product.phoneImages[0]} alt={product.model} style={{ width: '50px', height: 'auto' }} />
-                      </div>
-                    ))}
-                  </td>
+  {order.soldproducts.map((product, index) => (
+    <div key={index}>
+      <strong>{product.model}</strong>
+      <p>Brand: {product.brand}</p>
+      <p>IMEI No: {product.imeiNo}</p>
+      {Array.isArray(product.phoneImages) && product.phoneImages.length > 0 ? (
+        <img
+          src={product.phoneImages[0]}
+          alt={product.model}
+          style={{ width: '50px', height: 'auto' }}
+        />
+      ) : (
+        <div>No Image Available</div>
+      )}
+    </div>
+  ))}
+</td>
+
                   <td>{order.totalPrice}</td>
                   <td>{order.orderStatus}</td>
                 </tr>

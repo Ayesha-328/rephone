@@ -20,86 +20,46 @@ const SellerRegisterPage = () => {
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState('');
-
-  const compressImage = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          
-          // Maximum dimensions
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Convert to blob
-          canvas.toBlob((blob) => {
-            resolve(blob);
-          }, 'image/jpeg', 0.7); // Compress with 0.7 quality
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const convertImageToHex = async (blob) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const buffer = reader.result;
-        const hex = Array.from(new Uint8Array(buffer))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
-        resolve(hex);
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
-  };
+  const [uploading, setUploading] = useState(false);  // For handling the upload state
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        // Compress the image
-        const compressedBlob = await compressImage(file);
-        
-        setFormData(prev => ({
-          ...prev,
-          profilePicture: compressedBlob
-        }));
+        setUploading(true); // Set uploading state to true when file is selected
 
-        // Create preview URL
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewUrl(reader.result);
-        };
-        reader.readAsDataURL(compressedBlob);
+        // Create a FormData object
+        const formData = new FormData();
+        formData.append('profilePic', file);  // Append the image file to the form data
+
+        // Upload image to Cloudinary
+        const response = await fetch('http://localhost:5000/api/seller/upload-profile-pic', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const result = await response.json();
+        setUploading(false); // Set uploading state to false once upload is done
+
+        if (result.url) {
+          setFormData(prev => ({
+            ...prev,
+            profilePicture: result.url // Store the image URL returned by Cloudinary
+          }));
+
+          // Create preview URL
+          setPreviewUrl(result.url);
+        } else {
+          setError('Failed to upload image');
+        }
       } catch (err) {
-        console.error('Error compressing image:', err);
-        setError('Error processing image. Please try a different image.');
+        setUploading(false); // Set uploading state to false if an error occurs
+        console.error('Error uploading image:', err);
+        setError('Error uploading image. Please try again.');
       }
     }
   };
@@ -124,10 +84,6 @@ const SellerRegisterPage = () => {
     }
 
     try {
-      // Convert compressed image to hex
-      const hexImage = await convertImageToHex(formData.profilePicture);
-      
-      // Create the data object to send
       const submitData = {
         name: formData.name,
         email: formData.email,
@@ -139,7 +95,7 @@ const SellerRegisterPage = () => {
         street: formData.street,
         houseNumber: formData.houseNumber,
         nearestLandmark: formData.nearestLandmark,
-        profilePicture: hexImage
+        profilePicture: formData.profilePicture
       };
 
       console.log('Sending data:', submitData); // Debug log
@@ -153,10 +109,8 @@ const SellerRegisterPage = () => {
         body: JSON.stringify(submitData),
       });
 
-      // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        // If response is not JSON, get the text content for debugging
         const textResponse = await response.text();
         console.error('Non-JSON response:', textResponse);
         throw new Error('Server returned non-JSON response');
@@ -340,56 +294,46 @@ const SellerRegisterPage = () => {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="password" className="block mb-2">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
-                    required
-                    autoComplete="new-password"
-                  />
-                  <p className="text-sm text-gray-300 mt-1">
-                    Must be at least 6 characters and contain a letter
-                  </p>
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="block mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
-                    required
-                    autoComplete="new-password"
-                  />
-                </div>
+              <div>
+                <label htmlFor="password" className="block mb-2">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmPassword" className="block mb-2">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded bg-white/20 border border-white/30 text-white"
+                  required
+                />
               </div>
 
               <div className="mt-6">
                 <button
                   type="submit"
-                  className="w-full bg-[#FF9F1C] hover:bg-[#f39200] text-black font-bold py-3 px-4 rounded transition duration-300"
+                  className="w-full p-3 bg-[#FF9F1C] text-black rounded-full hover:bg-[#f39200] transition"
+                  disabled={uploading}
                 >
-                  Register as Seller
+                  {uploading ? 'Registering...' : 'Register'}
                 </button>
               </div>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-gray-300">
-                Already have a seller account?{' '}
-                <Link to="/seller/login" className="text-[#FF9F1C] hover:text-[#f39200] font-semibold">
-                  Sign in
-                </Link>
-              </p>
-            </div>
+            <p className="text-center mt-4 text-gray-300">
+              Already have an account? <Link to="/seller/login" className="text-[#FF9F1C] hover:text-[#f39200]">Login here</Link>
+            </p>
           </div>
         </div>
       </div>
@@ -398,4 +342,4 @@ const SellerRegisterPage = () => {
   );
 };
 
-export default SellerRegisterPage; 
+export default SellerRegisterPage;

@@ -2,11 +2,12 @@ import express from 'express';
 import { loginSeller, registerSeller, getSellerProfile, updateSellerProfile, deleteSellerProfile, getSellerPhones, getSellerOrders} from '../controllers/sellerController.js';
 import { validateRegistration, validateLogin, validateUpdateSeller } from '../middlewares/validation.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import { upload } from '../middlewares/uploadProfilePic.js';
 
 const router = express.Router();
 
 // register
-router.post('/register',validateRegistration, registerSeller)
+router.post('/register',upload,validateRegistration, registerSeller)
 
 // login
 router.post('/login',validateLogin, loginSeller)
@@ -15,7 +16,7 @@ router.post('/login',validateLogin, loginSeller)
 router.get('/profile/:query',protect, getSellerProfile)
 
 // update profile
-router.put('/update/:query',protect, validateUpdateSeller, updateSellerProfile)
+router.put('/update/:query',protect, upload, validateUpdateSeller, updateSellerProfile)
 
 // delete seller profile
 router.delete('/delete/:query',protect, deleteSellerProfile)

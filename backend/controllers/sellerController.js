@@ -121,11 +121,6 @@ const getSellerProfile = async (req, res) => {
             return res.status(404).json({ error: "Seller not found" });
         }
 
-        // Format the profile picture
-        const sellerData = seller.rows[0];
-        if (sellerData.profilePic) {
-            sellerData.profilePic = Buffer.from(sellerData.profilePic).toString('base64');
-        }
 
         res.status(200).json(seller.rows[0]);
     } catch (error) {
@@ -145,7 +140,13 @@ const updateSellerProfile = async (req, res) => {
     }
     
     const { query } = req.params;
-    const { name, phoneNumber, city, area, street, houseNumber, nearestLandmark, email, sellerType, profilePicture } = req.body;
+    const {
+        name, phoneNumber, city, area,
+        street, houseNumber, nearestLandmark,
+        email, sellerType
+    } = req.body;
+
+    const profilePicture = req.file ? req.file.path : null;
 
     const client = await pool.connect();
     try {
@@ -252,33 +253,6 @@ const deleteSellerProfile = async (req, res) => {
     }
 }
 
-// get all sellers
-const getAllSellers = async (req, res) => {
-    const client = await pool.connect();
-    try {
-        const sellers = await client.query(`SELECT u.name, u."phoneNumber", u.city, u.area, u.street, u."houseNumber", u."nearestLandmark", u.email, s."sellerType", s."profilePic"
-             FROM "User" u JOIN "Seller" s ON u.userid = s.userid`);
-
-        if (sellers.rows.length === 0) {
-            return res.status(404).json({ error: "No sellers found" });
-        }
-
-        // Format the profile picture
-        sellers.rows.forEach(seller => {
-            if (seller.profilePic) {
-                seller.profilePic = Buffer.from(seller.profilePic).toString('base64');
-            }
-        });
-
-        res.status(200).json(sellers.rows);
-    } catch (error) {
-        console.error("Error while fetching all sellers:", error);
-        res.status(500).json({ error: "An error occurred while fetching all sellers" });
-    } finally {
-        client.release();
-    }
-}
-
 
 // get all listed phones of a seller
 const getSellerPhones = async (req, res) => {
@@ -297,12 +271,6 @@ const getSellerPhones = async (req, res) => {
         if (phones.rows.length === 0) {
             return res.status(404).json({ error: "No phones found for this seller" });
         }
-// format the phone images
-        phones.rows.forEach(product => {
-            product.phoneImage = product.phoneImage 
-            ? product.phoneImage.map(imageBuffer => imageBuffer.toString('base64')) 
-            : [];
-        });
 
         res.status(200).json(phones.rows);
     } catch (error) {
