@@ -31,7 +31,7 @@ const ContactPage = () => {
       <Header/>
       <div className="flex-grow bg-[#003566] text-white p-8 pt-28">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-center">Contact Us</h1>
+          <h1 className="text-3xl text-center mb-6 font-[aperture] lg:text-4xl font-semibold text-transparent bg-clip-text bg-gradient-to-b from-[#FF9F1C] to-[#dbb51e]">Contact Us</h1>
           
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm">

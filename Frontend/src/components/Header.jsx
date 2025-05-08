@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import logo from "../assets/rephone-logo.png"; // Adjust the path to your logo image
 
 export const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -26,9 +27,7 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl md:text-3xl font-bold text-white hover:text-[#FF9F1C] transition-colors">
-              Rephone
-            </span>
+            <img src={logo} alt="site-logo" className="h-16"/>
           </Link>
 
           {/* Desktop Navigation */}
@@ -37,7 +36,7 @@ export const Header = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`text-base md:text-lg font-medium ${
+                className={`text-base   font-light ${
                   location.pathname === item.path
                     ? "text-white border-b-2 border-[#FF9F1C]"
                     : "text-white hover:text-[#FF9F1C] hover:border-b-2 hover:border-[#FF9F1C]"
@@ -54,19 +53,19 @@ export const Header = () => {
                 placeholder="Search..."
                 className="w-full px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-transparent"
               />
-              <button className="absolute right-3 text-black hover:text-[#FF9F1C]">
+              <button className="absolute right-1 hover:text-[#FF9F1C] ">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path  strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
             </div>
 
             {/* Cart and Seller */}
             <div className="flex items-center space-x-4">
-              <Link to="/seller/login" className="text-white hover:text-[#FF9F1C] transition-colors font-medium">
+              <Link to="/seller/login" className="text-[#003566] font-bold text-sm bg-[#FF9F1C] p-2 px-3 rounded-full hover:bg-[#ff9d1c] transition-colors ">
                 Sell a Phone
               </Link>
-              <Link to="/cart" className="text-white hover:text-[#FF9F1C] transition-colors">
+              <Link to="/cart" >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>

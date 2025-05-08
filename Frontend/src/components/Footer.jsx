@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import RephoneLogo from '../assets/rephone-logo.png'; 
 
 const Footer = () => {
   return (
     <footer className="bg-[#002647] text-white py-8">
-      <div className=" mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="mx-auto md:px-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 px-4">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-semibold mb-4">Rephone</h3>
+            
+              <img src={RephoneLogo} alt="" className='h-20 font-semibold mb-4' />
+        
             <p className="text-gray-300">
               Your trusted partner in mobile solutions and services.
             </p>
