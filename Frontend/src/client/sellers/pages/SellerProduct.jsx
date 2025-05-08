@@ -73,8 +73,9 @@ useEffect(() => {
     <SellerLayout>
       <div className="min-h-[calc(100vh-4rem)] w-full p-6 text-black">
         <div className="grid gap-6">
-          <h1 className="text-3xl font-bold mb-4">My Listed Products</h1>
-          <div className="grid gap-6 lg:grid-cols-3">
+        <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
+                My Listed Products
+            </p>          <div className="grid gap-6 lg:grid-cols-3">
             {products.map(product => (
               <ProductCard key={product.productid} product={product} />
             ))}

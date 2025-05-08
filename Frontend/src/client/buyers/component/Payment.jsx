@@ -4,7 +4,6 @@ import { useCart } from "./CartContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../../components/Header";
-import { div } from "three/webgpu";
 const Payment = () => {
     const { cartItems } = useCart();
     const navigate = useNavigate();

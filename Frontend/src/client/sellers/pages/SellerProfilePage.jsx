@@ -92,8 +92,9 @@ const SellerProfilePage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-              <p className="text-gray-600">View and manage your profile information</p>
+            <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
+                Profile Settings
+            </p>              <p className="text-gray-600">View and manage your profile information</p>
             </div>
             {!isEditing && (
               <button

@@ -202,16 +202,16 @@ export const SellerForm = () => {
         }
     };
     return (
-        <form onSubmit={handleSubmit} className="bg-[#FFFFFF] justify-center items-center min-h-42 p-4 pr-10 relative left-5 shadow-lg pt-2 mt-10 mb-10 lg:min-h-100 lg:left-1/2">
-            <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
-                List Your Phone for Sale
+    <form onSubmit={handleSubmit} className="min-h-[calc(100vh-4rem)] w-full  bg-gray-50">
+    <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
+                List Phone for Sale
             </p>
 
             {error && <p className="text-red-500 text-center mb-4">{error}</p>}
             {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
 
             {/* --- CORRECTED Image Upload Section --- */}
-            <div className="flex flex-col border-t-1 border-[#2B2A2A]/50 pt-4 pb-4"> {/* Maybe add pt-4 pb-4 */}
+            <div className="flex flex-col  border-[#2B2A2A]/50 pt-4 pb-4"> {/* Maybe add pt-4 pb-4 */}
                 <p className="text-sm text-[#003566] font-medium font-[Merriweather] mb-2 ml-6 lg:text-md">
                     Upload Images <span className="text-[#FF0000]">*</span>
                 </p>

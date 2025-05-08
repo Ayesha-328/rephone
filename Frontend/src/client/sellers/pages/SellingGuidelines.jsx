@@ -6,8 +6,9 @@ const SellingGuideline = () => {
     <SellerLayout>
       <div className="min-h-[calc(100vh-4rem)] w-full p-8 bg-gray-50 text-gray-800">
         <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h1 className="text-3xl font-bold mb-6 text-blue-700">📘 Selling Guidelines</h1>
-
+        <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
+                Selling Guidelines
+            </p>
           <section className="mb-6">
             <p className="text-gray-700">
               To ensure a smooth experience for both sellers and buyers, please follow these guidelines when listing a phone on our platform.

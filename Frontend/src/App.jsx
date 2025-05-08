@@ -16,56 +16,42 @@ import SellerProduct from "./client/sellers/pages/SellerProduct.jsx";
 import SellingGuideline from "./client/sellers/pages/SellingGuidelines.jsx"; 
 import OrderPage from "./client/buyers/component/orderPage.jsx";
 import Payment from "./client/buyers/component/Payment.jsx";
-// import PhoneDescription from "./components/PhoneDescription.jsx";
 import ProductDescription from "./components/PhoneDescription.jsx";
 import { CartProvider } from "./client/buyers/component/CartContext.jsx";
 import OrderConfirmation from "./client/buyers/component/OrderConfirmation.jsx";
-// import BuyersDashboard from "./pages/BuyersDashboard";/
-// import SellersDashboard from "./pages/SellersDashboard";
-// import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   return (
     <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        
-        {/* Seller Routes */}
-        <Route path="/seller/*" element={
-          <SellerAuthProvider>
-            <Routes>
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<SellerRegisterPage />} />
-              <Route path="home" element={<SellerHomePage />} />
-              <Route path="SellerDashboard" element={<SellerDashboard />} />
-              <Route path="BusinessRegister" element={<RegisterPage />} />
-              <Route path="SellerProfilePage" element={<SellerProfilePage />} />
-              <Route path="products" element={<SellerProduct />} />
-              <Route path="orders" element={<SellerOrdersPage />} />
-              <Route path="guidelines" element={<SellingGuideline />} />
-              
-            </Routes>
-          </SellerAuthProvider>
-        } />
-            <CartProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/SellerDashboard" element={<SellerDashboard />} />
-          <Route path="/cart" element={<OrderPage />} />
-          <Route path="/Checkout" element={<Payment />} />
-          <Route path="/product/:id" element={<ProductDescription />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-        </Routes>
-      </Router>
-    </CartProvider>
-      </Routes>
-    </Router>
+      <SellerAuthProvider>
+        <CartProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/services" element={<ServicesPage />} />
 
+            {/* Seller Routes */}
+            <Route path="/seller/login" element={<Login />} />
+            <Route path="/seller/register" element={<SellerRegisterPage />} />
+            <Route path="/seller/home" element={<SellerHomePage />} />
+            <Route path="/seller/SellerDashboard" element={<SellerDashboard />} />
+            <Route path="/seller/BusinessRegister" element={<RegisterPage />} />
+            <Route path="/seller/SellerProfilePage" element={<SellerProfilePage />} />
+            <Route path="/seller/products" element={<SellerProduct />} />
+            <Route path="/seller/orders" element={<SellerOrdersPage />} />
+            <Route path="/seller/guidelines" element={<SellingGuideline />} />
+
+            {/* Cart and Order Routes */}
+            <Route path="/cart" element={<OrderPage />} />
+            <Route path="/checkout" element={<Payment />} />
+            <Route path="/product/:id" element={<ProductDescription />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+          </Routes>
+        </CartProvider>
+      </SellerAuthProvider>
+    </Router>
   );
 };
 

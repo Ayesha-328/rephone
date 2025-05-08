@@ -63,9 +63,9 @@ const SellerOrdersPage = () => {
     <SellerLayout>
       <div className="min-h-[calc(100vh-4rem)] w-full p-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">My Orders</h1>
-          <p className="text-gray-600 mb-8">View all orders placed for your products</p>
-
+        <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
+                My Orders
+            </p>    
           {loading ? (
             <div className="text-center text-gray-500">Loading orders...</div>
           ) : orders.length === 0 ? (

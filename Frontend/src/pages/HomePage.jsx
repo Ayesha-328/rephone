@@ -3,7 +3,7 @@ import { Header } from "../components/Header";  // Ensure this path is correct
 import { HomepageComp } from "../components/HomepageComp";
 // import ProductCatalog from "../components/catalogComponent";
 import CatalogPage from "./CatalogPage";
-import { SideFilterBar } from "../components/sideFilterBar";
+import Footer from '../components/Footer';
 // import { RangeSelector } from "../components/priceScalar";
 
 const HomePage = () => {
@@ -18,10 +18,8 @@ const HomePage = () => {
     <CatalogPage/>
     </div>
     {/* <RangeSelector/> */}
-
       </>
-      
-      
+     
   );
 };
 

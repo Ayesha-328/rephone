@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Footer from "./Footer";
 
 
 
@@ -122,6 +123,7 @@ export const HomepageComp = () => {
                 </div>
                 <img className="w-20 h-20 mt-85 -ml-15" src="/arrow.svg" alt="" />
             </div>
+            
         </>
     );
 };
