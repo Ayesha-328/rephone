@@ -14,6 +14,12 @@ import { SellerAuthProvider } from './client/sellers/context/SellerAuthContext';
 import SellerOrdersPage from "./client/sellers/pages/SellerOrder.jsx";
 import SellerProduct from "./client/sellers/pages/SellerProduct.jsx";
 import SellingGuideline from "./client/sellers/pages/SellingGuidelines.jsx"; 
+import OrderPage from "./client/buyers/component/orderPage.jsx";
+import Payment from "./client/buyers/component/Payment.jsx";
+// import PhoneDescription from "./components/PhoneDescription.jsx";
+import ProductDescription from "./components/PhoneDescription.jsx";
+import { CartProvider } from "./client/buyers/component/CartContext.jsx";
+import OrderConfirmation from "./client/buyers/component/OrderConfirmation.jsx";
 // import BuyersDashboard from "./pages/BuyersDashboard";/
 // import SellersDashboard from "./pages/SellersDashboard";
 // import AdminDashboard from "./pages/AdminDashboard";
@@ -45,8 +51,21 @@ const App = () => {
             </Routes>
           </SellerAuthProvider>
         } />
+            <CartProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/SellerDashboard" element={<SellerDashboard />} />
+          <Route path="/cart" element={<OrderPage />} />
+          <Route path="/Checkout" element={<Payment />} />
+          <Route path="/product/:id" element={<ProductDescription />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+        </Routes>
+      </Router>
+    </CartProvider>
       </Routes>
     </Router>
+
   );
 };
 
