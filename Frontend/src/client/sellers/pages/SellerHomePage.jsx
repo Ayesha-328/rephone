@@ -4,7 +4,7 @@ import { useSellerAuth } from '../context/SellerAuthContext';
 import SellerLayout from '../components/SellerLayout';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { FiSmartphone, FiDollarSign, FiCheckCircle, FiClock, FiTrendingUp, FiPieChart } from 'react-icons/fi';
+import { FiSmartphone, FiDollarSign, FiCheckCircle, FiClock, FiTrendingUp, FiPieChart , FiArrowUpCircle } from 'react-icons/fi';
 import { FaBusinessTime } from 'react-icons/fa';
 import { MdOutlineSell, MdOutlineBusiness } from 'react-icons/md';
 import { RiGuideLine } from 'react-icons/ri';
@@ -235,7 +235,7 @@ const SellerHomePage = () => {
             <MetricCard
               title="Total Earnings"
               value={`Rs. ${(metrics?.totalEarnings || 0).toLocaleString()}`}
-              icon={<FiDollarSign className="text-xl" />}
+              icon={<FiArrowUpCircle className="text-xl" />}
               trend="up"
               trendValue="20% from last month"
               className="border-l-4 border-blue-500"

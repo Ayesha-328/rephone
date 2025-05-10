@@ -1,5 +1,5 @@
 import express from 'express';
-import {  
+import { uploadPhone, 
     getAllPhones, 
     getPhoneDetails, 
     getVerifiedPhones, 
@@ -11,7 +11,9 @@ import {
     getStorageVariants,
     getPhoneDetailsByBrandAndModel
 } from '../controllers/productController.js';
+import { validateUploadPhone } from '../middlewares/validation.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import { uploadPhoneImages } from '../middlewares/uploadPhoneImage.js';
 // import { getProducts, getProductById, deleteProduct, createProduct, updateProduct, createProductReview } from '../controllers/productController.js';
 
 
@@ -28,6 +30,9 @@ router.get('/storage/:model', getStorageVariants);
 
 // get phone details by brand and model
 router.get('/details/:brand/:model', getPhoneDetailsByBrandAndModel);
+
+// Seller uplaod phone
+router.post('/upload', protect,uploadPhoneImages, validateUploadPhone, uploadPhone);
 
 // get all phones
 router.get('/all', getAllPhones);

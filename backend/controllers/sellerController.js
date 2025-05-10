@@ -340,8 +340,6 @@ ORDER BY o."orderDate" DESC;
         client.release();
     }
 }
-
-
 // Get seller metrics
 const getSellerMetrics = async (req, res) => {
     const { sellerId } = req.params;
@@ -438,66 +436,7 @@ const getListingStatusCounts = async (req, res) => {
         client.release();
     }
 };
-// upload phone
-const uploadPhone = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
 
-    const user = req.user;
-    const { brand, model, price, imei, color } = req.body;
-
-    // Get array of image URLs from uploaded files (or empty if none provided)
-    const phoneImages = req.files ? req.files.map(file => file.path) : [];
-
-    const client = await pool.connect();
-
-    try {
-        await client.query("BEGIN");
-
-        // Check if phone brand and model exists
-        const phoneInfo = await client.query(
-            `SELECT * FROM "Phone" WHERE phone_brand = $1 AND phone_model = $2`,
-            [brand, model]
-        );
-
-        if (phoneInfo.rows.length === 0) {
-            return res.status(400).json({ message: "Phone info cannot be found!" });
-        }
-
-        // Check IMEI uniqueness
-        const existingPhone = await client.query(
-            `SELECT * FROM "ListedProduct" WHERE "imeiNumber" = $1`,
-            [imei]
-        );
-
-        if (existingPhone.rows.length > 0) {
-            return res.status(400).json({ message: "Phone with this IMEI number already exists!" });
-        }
-
-        // Insert phone with images array
-        const uploadPhone = await client.query(
-            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage", "color", "price") 
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [user.sellerid, phoneInfo.rows[0].phoneId, imei, phoneImages, color, price]
-        );
-
-        await client.query("COMMIT");
-
-        res.status(201).json({
-            message: `Phone uploaded successfully!`,
-            phone: uploadPhone.rows[0]
-        });
-
-    } catch (error) {
-        await client.query("ROLLBACK");
-        console.error("Error during phone upload:", error);
-        res.status(500).json({ error: "Product upload failed. Please try again." });
-    } finally {
-        client.release();
-    }
-};
 export { 
     registerSeller, 
     loginSeller, 
@@ -506,7 +445,6 @@ export {
     deleteSellerProfile, 
     getSellerPhones,
     getSellerOrders,
-    getListingStatusCounts,
     getSellerMetrics,
-    uploadPhone
+    getListingStatusCounts
 };
