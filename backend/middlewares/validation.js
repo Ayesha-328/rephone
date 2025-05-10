@@ -81,13 +81,11 @@ const validateRegistration = [
       .withMessage("Brand must contain only alphabets")
       .isLength({ max: 30 })
       .withMessage("Brand must be at most 30 characters long"),
-    body("model")
-      .notEmpty()
-      .withMessage("Model is required")
-      .matches(/^[a-zA-Z0-9 ]+$/)
-      .withMessage("Model must contain only alphabets and numbers")
-      .isLength({ max: 30 })
-      .withMessage("Model must be at most 30 characters long"),
+  body("model")
+  .notEmpty()
+  .withMessage("Model is required")
+  .isLength({ max: 30 })
+  .withMessage("Model must be at most 30 characters long"),
     body("price")
       .notEmpty()
       .withMessage("Price is required")

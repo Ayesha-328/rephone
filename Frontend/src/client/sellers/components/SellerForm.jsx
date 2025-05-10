@@ -1,16 +1,17 @@
-
 import React, { useState, useEffect } from "react";
-import { UploadImage } from "./imageUpload"; 
+import { UploadImage } from "./imageUpload";
+import { useSellerAuth } from '../context/SellerAuthContext';
 
 export const SellerForm = () => {
+    const { seller, loading: authLoading, logout } = useSellerAuth();
     const [brands, setBrands] = useState([]);
     const [selectedBrand, setSelectedBrand] = useState("");
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState("");
     const [phoneDetails, setPhoneDetails] = useState({
         price: "",
-        imei: "", // Added IMEI
-        color: "", // Added Color
+        imei: "",
+        color: "",
         storage: "",
         ram: "",
         launchDate: "",
@@ -20,16 +21,18 @@ export const SellerForm = () => {
         battery: "",
         resolution: ""
     });
-    const [selectedImages, setSelectedImages] = useState([]); // State for image files
-    const [isSubmitting, setIsSubmitting] = useState(false); // Optional: for loading state
-    const [error, setError] = useState(null); // Optional: for error messages
-    const [successMessage, setSuccessMessage] = useState(null); // Optional: for success messages
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
 
-    // --- Existing useEffect hooks for brands, models, details ---
+    // Fetch brands on component mount
     useEffect(() => {
         const fetchBrands = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/product/brands");
+                const response = await fetch("http://localhost:5000/api/product/brands", {
+                    credentials: 'include'
+                });
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
                 setBrands(data);
@@ -41,19 +44,18 @@ export const SellerForm = () => {
         fetchBrands();
     }, []);
 
+    // Fetch models when brand is selected
     useEffect(() => {
         const fetchModels = async () => {
             if (selectedBrand) {
                 try {
-                    const response = await fetch(`http://localhost:5000/api/product/models/${selectedBrand}`);
+                    const response = await fetch(
+                        `http://localhost:5000/api/product/models/${selectedBrand}`,
+                        { credentials: 'include' }
+                    );
                     if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
-                    if (Array.isArray(data)) {
-                        setModels(data);
-                    } else {
-                        setModels([]);
-                        console.error("Models API did not return an array", data);
-                    }
+                    setModels(Array.isArray(data) ? data : []);
                 } catch (error) {
                     console.error("Failed to fetch models:", error);
                     setModels([]);
@@ -66,17 +68,20 @@ export const SellerForm = () => {
         fetchModels();
     }, [selectedBrand]);
 
+    // Fetch phone details when model is selected
     useEffect(() => {
-        // This useEffect fetches *default* details. The user can override them.
         const fetchPhoneDetails = async () => {
             if (selectedBrand && selectedModel) {
                 try {
-                    setError(null); // Clear previous errors
-                    const response = await fetch(`http://localhost:5000/api/product/details/${selectedBrand}/${selectedModel}`);
+                    setError(null);
+                    const response = await fetch(
+                        `http://localhost:5000/api/product/details/${selectedBrand}/${selectedModel}`,
+                        { credentials: 'include' }
+                    );
                     const data = await response.json();
                     if (response.ok) {
                         setPhoneDetails(prevDetails => ({
-                            ...prevDetails, // Keep existing user input like price, imei, color
+                            ...prevDetails,
                             storage: data.storage || prevDetails.storage || "",
                             ram: data.ram || prevDetails.ram || "",
                             launchDate: data.launch_date || prevDetails.launchDate || "",
@@ -86,14 +91,6 @@ export const SellerForm = () => {
                             battery: data.battery || prevDetails.battery || "",
                             resolution: data.resolution || prevDetails.resolution || ""
                         }));
-                    } else {
-                        console.error("Error fetching phone details:", data.error);
-                        // Optionally clear fields if fetch fails, or keep existing
-                        // setPhoneDetails(prevDetails => ({
-                        //     ...prevDetails, // Keep user input
-                        //     storage: "", ram: "", launchDate: "", dimensions: "",
-                        //     displayResolution: "", os: "", battery: "", resolution: ""
-                        // }));
                     }
                 } catch (error) {
                     console.error("Failed to fetch phone details:", error);
@@ -103,7 +100,7 @@ export const SellerForm = () => {
         };
         fetchPhoneDetails();
     }, [selectedModel, selectedBrand]);
- 
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setPhoneDetails(prevDetails => ({
@@ -115,14 +112,11 @@ export const SellerForm = () => {
     };
 
     const handleImagesChange = (files) => {
-        console.log('Received in handleImagesChange:', files);
-        console.log('Is it an array?', Array.isArray(files));
-
         if (Array.isArray(files)) {
             setSelectedImages(files);
         } else {
-            console.error("handleImagesChange did NOT receive an array!", files);
-            setSelectedImages([]); // Fallback
+            console.error("handleImagesChange did NOT receive an array!");
+            setSelectedImages([]);
         }
         setError(null);
         setSuccessMessage(null);
@@ -133,7 +127,8 @@ export const SellerForm = () => {
         setError(null);
         setSuccessMessage(null);
     
-        if (!selectedBrand || !selectedModel || !phoneDetails.price || !phoneDetails.imei || !phoneDetails.color || selectedImages.length === 0) {
+        if (!selectedBrand || !selectedModel || !phoneDetails.price || 
+            !phoneDetails.imei || !phoneDetails.color || selectedImages.length === 0) {
             setError("Please fill in all required fields (*) and upload at least one image.");
             return;
         }
@@ -146,36 +141,16 @@ export const SellerForm = () => {
         formData.append('price', phoneDetails.price);
         formData.append('imei', phoneDetails.imei);
         formData.append('color', phoneDetails.color);
+        
     
-        // --- Check if selectedImages is an array before looping ---
-        if (!Array.isArray(selectedImages)) {
-             console.error("CRITICAL: selectedImages is not an array just before sending!", selectedImages);
-             setError("An internal error occurred with image handling. Please refresh and try again.");
-             setIsSubmitting(false);
-             return;
-        }
-        selectedImages.forEach((file) => {
-            formData.append('images', file);
-        });
-    
-        // --- GET THE TOKEN ---
-        const token = localStorage.getItem('token'); // Or however you store your token
-    
-        // --- CHECK FOR TOKEN ---
-        if (!token) {
-            setError("Authentication error: You might need to log in again.");
-            setIsSubmitting(false);
-            return;
-        }
+       selectedImages.forEach((file) => {
+    formData.append('image', file); 
+});
     
         try {
-            const response = await fetch("http://localhost:5000/api/product/upload-phone", {
+            const response = await fetch("http://localhost:5000/api/product/upload", {
                 method: 'POST',
-                // --- ADD AUTHORIZATION HEADER ---
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // No 'Content-Type' needed for FormData, browser sets it
-                },
+                credentials: 'include',
                 body: formData,
             });
     
@@ -183,72 +158,110 @@ export const SellerForm = () => {
     
             if (response.ok) {
                 setSuccessMessage(data.message || "Phone uploaded successfully!");
-                console.log("Upload successful:", data);
-                // Optionally reset form
+                // Reset form on success
+                setSelectedBrand("");
+                setSelectedModel("");
+                setPhoneDetails({
+                    price: "",
+                    imei: "",
+                    color: "",
+                    storage: "",
+                    ram: "",
+                    launchDate: "",
+                    dimensions: "",
+                    displayResolution: "",
+                    os: "",
+                    battery: "",
+                    resolution: ""
+                });
+                setSelectedImages([]);
             } else {
-                 // Check specifically for 401 again, might indicate expired token
-                 if (response.status === 401) {
-                     setError(data.message || "Authentication failed. Please log in again.");
-                 } else {
-                     setError(data.message || `Upload failed: ${response.statusText}`);
-                 }
-                console.error("Upload failed:", data);
+                if (response.status === 401) {
+                    setError("Session expired. Please log in again.");
+                    logout();
+                } else {
+                    setError(data.message || `Upload failed: ${response.statusText}`);
+                }
             }
         } catch (err) {
-            setError("An error occurred during submission. Check connection.");
-            console.error("Error submitting form:", err);
+            setError("Network error. Please check your connection.");
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    if (authLoading) {
+        return <div className="flex justify-center items-center h-64">Loading...</div>;
+    }
+
+    if (!seller) {
+        return (
+            <div className="text-center py-8">
+                <p className="text-lg mb-4">Please log in to access this feature.</p>
+            </div>
+        );
+    }
+
     return (
-        <form onSubmit={handleSubmit} className="bg-[#FFFFFF] justify-center items-center min-h-42 p-4 pr-10 relative left-5 shadow-lg pt-2 mt-10 mb-10 lg:min-h-100 lg:left-1/2">
-            <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
-                List Your Phone for Sale
-            </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <form 
+                onSubmit={handleSubmit} 
+                className="bg-white rounded-lg shadow-md p-6 md:p-8"
+            >
+                <h2 className="text-2xl md:text-3xl font-bold text-[#003566] mb-6">
+                    List Your Phone for Sale
+                </h2>
 
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
+                {error && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+                        <p>{error}</p>
+                    </div>
+                )}
+                {successMessage && (
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
+                        <p>{successMessage}</p>
+                    </div>
+                )}
 
-            {/* --- CORRECTED Image Upload Section --- */}
-            <div className="flex flex-col border-t-1 border-[#2B2A2A]/50 pt-4 pb-4"> {/* Maybe add pt-4 pb-4 */}
-                <p className="text-sm text-[#003566] font-medium font-[Merriweather] mb-2 ml-6 lg:text-md">
-                    Upload Images <span className="text-[#FF0000]">*</span>
-                </p>
-                {/* Container for the UploadImage component */}
-                <div className="bg-[#FFFFFF] w-full px-4 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-0 lg:ml-4 lg:w-[calc(100%-2rem)]">
-                     {/* Use your UploadImage component here */}
-                     {/* Pass the handler to the 'onImagesChange' prop */}
-                     <UploadImage onImagesChange={handleImagesChange} />
-                </div>
-                 {/* Display selected image count below the component */}
-                 {selectedImages.length > 0 && (
-                        <p className="text-xs text-gray-600 mt-2 ml-6">
+                {/* Image Upload Section */}
+                <div className="mb-8">
+                    <label className="block text-sm md:text-md font-medium text-[#003566] mb-2">
+                        Upload Images <span className="text-red-500">*</span>
+                    </label>
+                    <div className="border border-gray-300 text-black rounded-md p-4">
+                        <UploadImage onImagesChange={handleImagesChange} />
+                    </div>
+                    {selectedImages.length > 0 && (
+                        <p className="mt-2 text-sm text-gray-600">
                             {selectedImages.length} image(s) ready for upload.
                         </p>
                     )}
-            </div>
-            {/* --- End of Corrected Section --- */}
-
-
-            {/* ... (rest of your form elements: Brand, Model, Inputs, Button) ... */}
-             {/* Brand and Model Selection */}
-            <div className="lg:flex">
-                {/* Brand */}
-                <div className="mt-5">
-                    <p className="text-sm lg:text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-7">
-                        Brand <span className="text-[#FF0000]">*</span>
-                    </p>
-                    <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-5">
+                </div>
+                
+                {/* Brand and Model Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Brand */}
+                    <div>
+                        <label className="block text-sm md:text-md font-medium text-[#003566] mb-2">
+                            Brand <span className="text-red-500">*</span>
+                        </label>
                         <select
-                            className="text-md text-[rgba(0,0,0,0.5)] font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
+                            className="w-full p-3 border text-black border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={selectedBrand}
                             onChange={(e) => {
                                 setSelectedBrand(e.target.value);
-                                setSelectedModel(""); // Reset model when brand changes
-                                setPhoneDetails(prev => ({ price: prev.price, imei: prev.imei, color: prev.color, storage: "", ram: "", launchDate: "", dimensions: "", displayResolution: "", os: "", battery: "", resolution: "" }));
-                                setError(null); // Clear error
-                                setSuccessMessage(null);
+                                setSelectedModel("");
+                                setPhoneDetails(prev => ({ 
+                                    ...prev,
+                                    storage: "",
+                                    ram: "",
+                                    launchDate: "",
+                                    dimensions: "",
+                                    displayResolution: "",
+                                    os: "",
+                                    battery: "",
+                                    resolution: ""
+                                }));
                             }}
                             required
                         >
@@ -260,24 +273,18 @@ export const SellerForm = () => {
                             ))}
                         </select>
                     </div>
-                </div>
 
-                {/* Model */}
-                <div className="-ml-1 mt-4 lg:ml-2">
-                    <p className="text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-8">
-                        Model <span className="text-[#FF0000]">*</span>
-                    </p>
-                    <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-6">
+                    {/* Model */}
+                    <div>
+                        <label className="block text-sm md:text-md font-medium text-[#003566] mb-2">
+                            Model <span className="text-red-500">*</span>
+                        </label>
                         <select
-                            className="text-md text-[rgba(0,0,0,0.5)] font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
+                            className="w-full p-3 border text-black border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
                             value={selectedModel}
-                            onChange={(e) => {
-                                setSelectedModel(e.target.value);
-                                setError(null); // Clear error
-                                setSuccessMessage(null);
-                            }}
+                            onChange={(e) => setSelectedModel(e.target.value)}
                             required
-                            disabled={!selectedBrand || models.length === 0} // Disable if no brand or models
+                            disabled={!selectedBrand || models.length === 0}
                         >
                             <option value="">Select model</option>
                             {models.map((modelObj, idx) => (
@@ -288,27 +295,21 @@ export const SellerForm = () => {
                         </select>
                     </div>
                 </div>
-            </div>
 
-            {/* Other Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-0">
-                {[
-                    { label: "Price (USD)", name: "price", placeholder: "Enter Price in USD", type: "number", required: true },
-                    { label: "IMEI no", name: "imei", placeholder: "Enter IMEI no", type: "text", required: true },
-                    { label: "Color", name: "color", placeholder: "Enter Color of Your Phone", type: "text", required: true },
-                    { label: "Storage", name: "storage", placeholder: "Storage (e.g., 128GB)", type: "text", required: false },
-                    { label: "RAM", name: "ram", placeholder: "RAM (e.g., 8GB)", type: "text", required: false },
-                    // ... other optional fields ...
-                ].map((item, index) => (
-                     (item.required || ['storage', 'ram'].includes(item.name)) &&
-                    <div key={index} className="lg:w-70 mt-5 flex flex-col">
-                         <p className="text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-7">
-                            {item.label} {item.required && <span className="text-[#FF0000]">*</span>}
-                        </p>
-                        <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-5">
+                {/* Required Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 text-black">
+                    {[
+                        { label: "Price (Rs.)", name: "price", placeholder: "Enter Price in Rs.", type: "number", required: true },
+                        { label: "IMEI no", name: "imei", placeholder: "Enter IMEI no", type: "text", required: true },
+                        { label: "Color", name: "color", placeholder: "Enter Color of Your Phone", type: "text", required: true },
+                    ].map((item, index) => (
+                        <div key={index}>
+                            <label className="block text-sm md:text-md font-medium text-[#003566] mb-2">
+                                {item.label} {item.required && <span className="text-red-500">*</span>}
+                            </label>
                             <input
-                                className="font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
-                                type={item.type || "text"}
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                type={item.type}
                                 name={item.name}
                                 placeholder={item.placeholder}
                                 value={phoneDetails[item.name] || ''}
@@ -317,17 +318,58 @@ export const SellerForm = () => {
                                 step={item.type === "number" ? "0.01" : undefined}
                             />
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-             <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-[#FF9F1C] via-[#FF8F00] to-[#FF7F00] hover:bg-gradient-to-br text-[#FFFFFF] text-xl lg:text-2xl font-bold font-[Merriweather] text-center w-70 h-12 lg:w-150 lg:h-15 ml-4 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isSubmitting ? 'Submitting...' : 'Submit to Verify'}
-            </button>
-        </form>
+                {/* Optional Fields */}
+                <h3 className="text-lg font-medium text-gray-700 mb-4">Additional Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 text-black">
+                    {[
+                        { label: "Storage", name: "storage", placeholder: "Storage (e.g., 128GB)", type: "text" },
+                        { label: "RAM", name: "ram", placeholder: "RAM (e.g., 8GB)", type: "text" },
+                        { label: "Launch Date", name: "launchDate", placeholder: "YYYY-MM-DD", type: "text" },
+                        { label: "Dimensions", name: "dimensions", placeholder: "Dimensions (e.g., 160.9 x 77.6 x 8.3 mm)", type: "text" },
+                        { label: "Display Resolution", name: "displayResolution", placeholder: "e.g., 1440x3200 pixels", type: "text" },
+                        { label: "Operating System", name: "os", placeholder: "e.g., Android 12", type: "text" },
+                        { label: "Battery", name: "battery", placeholder: "e.g., 5000 mAh", type: "text" },
+                        { label: "Camera Resolution", name: "resolution", placeholder: "e.g., 108 MP", type: "text" },
+                    ].map((item, index) => (
+                        <div key={index}>
+                            <label className="block text-sm md:text-md font-medium text-[#003566] mb-2">
+                                {item.label}
+                            </label>
+                            <input
+                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                type={item.type}
+                                name={item.name}
+                                placeholder={item.placeholder}
+                                value={phoneDetails[item.name] || ''}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex justify-center">
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-[#FF9F1C] via-[#FF8F00] to-[#FF7F00] text-white font-bold rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? (
+                            <span className="flex items-center justify-center">
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            </span>
+                        ) : (
+                            "Submit to Verify"
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 };

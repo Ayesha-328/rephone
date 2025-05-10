@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../context/SellerAuthContext';
 
@@ -6,19 +6,47 @@ const SellerLoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useSellerAuth();
+    const [isLoading, setIsLoading] = useState(false);
+    const { login, seller, loading } = useSellerAuth();
     const navigate = useNavigate();
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (seller && !loading) {
+            navigate('/seller/home');
+        }
+    }, [seller, loading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
+        
         try {
             await login(email, password);
-            navigate('/seller/home');
+            // Login success - navigation will happen via the useEffect
         } catch (err) {
-            setError(err.message || 'Invalid email or password');
+            let errorMessage = err.message || 'Invalid email or password';
+            
+            // Show a more user-friendly message if they're not a seller
+            if (errorMessage.includes('user is not a seller')) {
+                errorMessage = 'This account exists but is not registered as a seller. Please register as a seller first.';
+            }
+            
+            setError(errorMessage);
+            setIsLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="auth-container">
+                <div className="auth-box">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="auth-container">
@@ -36,6 +64,7 @@ const SellerLoginPage = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             className="auth-input"
+                            disabled={isLoading}
                         />
                     </div>
                     <div className="form-group">
@@ -47,10 +76,15 @@ const SellerLoginPage = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             className="auth-input"
+                            disabled={isLoading}
                         />
                     </div>
-                    <button type="submit" className="auth-button">
-                        Sign In
+                    <button 
+                        type="submit" 
+                        className="auth-button"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </form>
                 <div className="auth-link">

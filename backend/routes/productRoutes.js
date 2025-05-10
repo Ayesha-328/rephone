@@ -33,7 +33,6 @@ router.get('/details/:brand/:model', getPhoneDetailsByBrandAndModel);
 
 // Seller uplaod phone
 router.post('/upload', protect,uploadPhoneImages, validateUploadPhone, uploadPhone);
-
 // get all phones
 router.get('/all', getAllPhones);
 

@@ -59,7 +59,7 @@ const VerificationModal = ({ imei, onClose, onVerified }) => {
                         <div className="image-section">
                             {details.phoneImage && details.phoneImage.length > 0 ? (
                                 <img 
-                                    src={`data:image/jpeg;base64,${details.phoneImage[0]}`}
+                                    src={details.phoneImage[0]} // Removed base64 conversion as you're using Cloudinary URLs
                                     alt="Phone"
                                     className="phone-image"
                                 />
@@ -88,21 +88,42 @@ const VerificationModal = ({ imei, onClose, onVerified }) => {
                             <div className="info-group">
                                 <h3>Seller Information</h3>
                                 <div className="info-item">
-                                    <span>Name:</span> {details.sellerName}
+                                    <span>Name:</span> {details.sellerName || 'N/A'}
                                 </div>
                                 <div className="info-item">
-                                    <span>Email:</span> {details.sellerEmail}
+                                    <span>Email:</span> {details.sellerEmail || 'N/A'}
                                 </div>
                                 <div className="info-item">
-                                    <span>Type:</span> {details.sellerType}
+                                    <span>Type:</span> {details.sellerType || 'N/A'}
                                 </div>
                             </div>
 
                             <div className="info-group">
                                 <h3>Verification Status</h3>
-                                <div className={`status-box ${details.verificationStatus === 'Invalid IMEI' ? 'invalid' : ''}`}>
-                                    {details.verificationStatus || 'Status not available'}
-                                </div>
+                                {details.verificationStatus && (
+                                    <>
+                                        <div className="info-item">
+                                            <span>IMEI:</span> {details.verificationStatus.imei_number || 'N/A'}
+                                        </div>
+                                        <div className="info-item">
+                                            <span>Status:</span> 
+                                            <span className={`status-indicator ${
+                                                details.verificationStatus.device_is_clean === "true" 
+                                                    ? "clean" 
+                                                    : "blacklisted"
+                                            }`}>
+                                                {details.verificationStatus.device_is_clean === "true" 
+                                                    ? "Clean" 
+                                                    : "Blacklisted"}
+                                            </span>
+                                        </div>
+                                        {details.verificationStatus.device_is_clean !== "true" && (
+                                            <div className="info-item">
+                                                <span>Reason:</span> {details.verificationStatus.blacklist_reason || 'Not specified'}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -112,22 +133,29 @@ const VerificationModal = ({ imei, onClose, onVerified }) => {
                                 onClick={() => handleStatusUpdate('verified')}
                                 disabled={processing}
                             >
-                                Verify Phone
+                                {processing ? 'Processing...' : 'Verify Phone'}
                             </button>
                             <button 
                                 className="reject-btn"
                                 onClick={() => handleStatusUpdate('rejected')}
                                 disabled={processing}
                             >
-                                Reject Phone
+                                {processing ? 'Processing...' : 'Reject Phone'}
                             </button>
                             <button 
                                 className="cancel-btn"
                                 onClick={onClose}
+                                disabled={processing}
                             >
                                 Cancel
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="error-message">
+                        {error}
                     </div>
                 )}
             </div>

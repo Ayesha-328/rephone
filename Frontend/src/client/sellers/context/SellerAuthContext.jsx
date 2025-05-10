@@ -12,23 +12,21 @@ export const SellerAuthProvider = ({ children }) => {
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(true);
 
+    // Setup axios to include credentials with all requests
+    axios.defaults.withCredentials = true;
+
     useEffect(() => {
         const checkAuth = async () => {
             setLoading(true);
-            const storedUserId = localStorage.getItem('userId');
-            if (storedUserId) {
-                try {
-                    console.log('Initial check: Found userId in localStorage:', storedUserId);
-                    await verifySeller(storedUserId);
-                } catch (error) {
-                    console.error('Error during initial verification:', error);
-                    localStorage.removeItem('userId');
-                    localStorage.removeItem('sellerId');
-                    setSeller(null);
-                    setLoading(false);
+            try {
+                // Only check auth if we have a potential session
+                if (document.cookie.includes('jwt')) {
+                    await fetchProfile();
                 }
-            } else {
-                console.log('No userId found in localStorage');
+            } catch (error) {
+                // Silent fail - no valid session
+                setSeller(null);
+            } finally {
                 setLoading(false);
             }
         };
@@ -36,67 +34,67 @@ export const SellerAuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const verifySeller = async (userId) => {
+    const fetchProfile = async () => {
         try {
-            console.log('Verifying seller with userId:', userId);
-            const response = await axios.get(`http://localhost:5000/api/seller/profile/${userId}`, {
-                withCredentials: true
+            console.log('Fetching seller profile using cookie authentication');
+            
+            // The backend endpoint for fetching the current seller's profile
+            // Note: In your backend, this should be protected with JWT verification middleware
+            const response = await axios.get('http://localhost:5000/api/seller/profile', {
+                withCredentials: true // Ensure cookies are sent with the request
             });
 
             if (!response.data) {
                 throw new Error('No seller data returned from verification');
             }
             
-            // Get sellerId from localStorage - this is the key change
-            const sellerId = localStorage.getItem('sellerId');
-
-            const verifiedSeller = {
-                ...response.data,
-                userId: userId, // Ensure consistency with localStorage
-                sellerId: sellerId // Include the sellerId in the seller object
-            };
-
-            console.log('Verified seller with sellerId:', verifiedSeller);
-            setSeller(verifiedSeller);
-            return verifiedSeller;
+            console.log('Verified seller:', response.data);
+            setSeller(response.data);
+            setLoading(false);
+            return response.data;
         } catch (error) {
             console.error('Error verifying seller:', error.response?.data?.error || error.message);
-            localStorage.removeItem('userId');
-            localStorage.removeItem('sellerId');
             setSeller(null);
-            throw error;
-        } finally {
             setLoading(false);
+            throw error;
         }
     };
 
     const login = async (email, password) => {
         setLoading(true);
         try {
-            localStorage.removeItem('userId');
-            localStorage.removeItem('sellerId');
             setSeller(null);
     
             console.log('Attempting login with email:', email);
             const response = await axios.post(
                 'http://localhost:5000/api/seller/login',
                 { email, password },
-                { withCredentials: true }
+                { withCredentials: true } // This ensures cookies are accepted
             );
     
+            console.log('Login successful');
+            
+            // Store seller ID for easier reference
             const { userId, sellerId } = response.data;
-    
-            if (!userId || !sellerId) {
-                throw new Error('Invalid login response - missing userId or sellerId');
+            
+            // Fetch the profile to get seller data
+            // Use the userId from login response
+            const profileResponse = await axios.get(`http://localhost:5000/api/seller/profile/${userId}`, {
+                withCredentials: true
+            });
+            
+            if (profileResponse.data) {
+                console.log('Profile fetched:', profileResponse.data);
+                // Add the sellerId to the profile data
+                setSeller({
+                    ...profileResponse.data,
+                    userId,
+                    sellerId
+                });
             }
     
-            console.log('Login successful, got userId:', userId, 'and sellerId:', sellerId);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('sellerId', sellerId);
-    
-            await verifySeller(userId);
-    
             console.log('Login and verification complete');
+            setLoading(false);
             return response.data;
         } catch (error) {
             console.error('Login error:', error.response?.data?.error || error.message);
@@ -107,26 +105,25 @@ export const SellerAuthProvider = ({ children }) => {
     
     const updateSellerProfile = async (formData) => {
         try {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
-                throw new Error('No userId found');
+            console.log('Updating profile');
+            
+            if (!seller || !seller.userId) {
+                throw new Error('No seller data available');
             }
 
-            console.log('Updating profile for userId:', userId);
-
             const response = await axios.put(
-                `http://localhost:5000/api/seller/update/${userId}`,
+                `http://localhost:5000/api/seller/profile/${seller.userId}`,
                 formData,
                 {
                     withCredentials: true,
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'multipart/form-data' // Changed to multipart/form-data for file uploads
                     }
                 }
             );
 
             toast.success(response.data.message || "Profile updated successfully!");
-            await verifySeller(userId);
+            await fetchProfile();
             return true;
         } catch (error) {
             console.error('Error updating profile:', error.response?.data?.error || error.message);
@@ -138,16 +135,13 @@ export const SellerAuthProvider = ({ children }) => {
     const fetchProducts = async () => {
         try {
             setProductsLoading(true);
-            const sellerId = seller?.sellerId || localStorage.getItem('sellerId');
-    
-            if (!sellerId) {
-                console.error('No sellerId available for fetching products');
-                setProductsLoading(false);
-                return;
+            
+            if (!seller || !seller.sellerId) {
+                throw new Error('No seller ID available');
             }
-    
-            console.log('Fetching products for sellerId:', sellerId);
-            const response = await axios.get(`http://localhost:5000/api/seller/phones/${sellerId}`, {
+            
+            console.log('Fetching products');
+            const response = await axios.get(`http://localhost:5000/api/seller/phones/${seller.sellerId}`, {
                 withCredentials: true
             });
     
@@ -168,17 +162,14 @@ export const SellerAuthProvider = ({ children }) => {
     const fetchOrders = async () => {
         try {
             setOrdersLoading(true);
-            const sellerId = seller?.sellerId || localStorage.getItem('sellerId');
-    
-            if (!sellerId) {
-                console.error('No sellerId available for fetching orders');
-                setOrdersLoading(false);
-                return [];
+            
+            if (!seller || !seller.sellerId) {
+                throw new Error('No seller ID available');
             }
-    
-            console.log('Fetching orders for sellerId:', sellerId);
-    
-            const response = await axios.get(`http://localhost:5000/api/seller/orders/${sellerId}`, {
+            
+            console.log('Fetching orders');
+            
+            const response = await axios.get(`http://localhost:5000/api/seller/orders/${seller.sellerId}`, {
                 withCredentials: true
             });
     
@@ -196,13 +187,23 @@ export const SellerAuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        console.log('Logging out');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('sellerId');
-        setSeller(null);
-        setProducts([]);
-        setOrders([]);
+    const logout = async () => {
+        try {
+            console.log('Logging out');
+            // Call logout endpoint to clear the cookie
+            await axios.post('http://localhost:5000/api/seller/logout', {}, { withCredentials: true });
+            
+            // Clear state
+            setSeller(null);
+            setProducts([]);
+            setOrders([]);
+        } catch (error) {
+            console.error('Error during logout:', error);
+            // Even if the server-side logout fails, clear the state
+            setSeller(null);
+            setProducts([]);
+            setOrders([]);
+        }
     };
 
     const value = {
