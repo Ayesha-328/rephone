@@ -1,16 +1,16 @@
-
 import React, { useState, useEffect } from "react";
 import { UploadImage } from "./imageUpload"; 
 
 export const SellerForm = () => {
+    // All your existing state and effect hooks remain exactly the same
     const [brands, setBrands] = useState([]);
     const [selectedBrand, setSelectedBrand] = useState("");
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState("");
     const [phoneDetails, setPhoneDetails] = useState({
         price: "",
-        imei: "", // Added IMEI
-        color: "", // Added Color
+        imei: "",
+        color: "",
         storage: "",
         ram: "",
         launchDate: "",
@@ -20,12 +20,10 @@ export const SellerForm = () => {
         battery: "",
         resolution: ""
     });
-    const [selectedImages, setSelectedImages] = useState([]); // State for image files
-    const [isSubmitting, setIsSubmitting] = useState(false); // Optional: for loading state
-    const [error, setError] = useState(null); // Optional: for error messages
-    const [successMessage, setSuccessMessage] = useState(null); // Optional: for success messages
-
-    // --- Existing useEffect hooks for brands, models, details ---
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     useEffect(() => {
         const fetchBrands = async () => {
             try {
@@ -67,16 +65,15 @@ export const SellerForm = () => {
     }, [selectedBrand]);
 
     useEffect(() => {
-        // This useEffect fetches *default* details. The user can override them.
         const fetchPhoneDetails = async () => {
             if (selectedBrand && selectedModel) {
                 try {
-                    setError(null); // Clear previous errors
+                    setError(null);
                     const response = await fetch(`http://localhost:5000/api/product/details/${selectedBrand}/${selectedModel}`);
                     const data = await response.json();
                     if (response.ok) {
                         setPhoneDetails(prevDetails => ({
-                            ...prevDetails, // Keep existing user input like price, imei, color
+                            ...prevDetails,
                             storage: data.storage || prevDetails.storage || "",
                             ram: data.ram || prevDetails.ram || "",
                             launchDate: data.launch_date || prevDetails.launchDate || "",
@@ -88,12 +85,6 @@ export const SellerForm = () => {
                         }));
                     } else {
                         console.error("Error fetching phone details:", data.error);
-                        // Optionally clear fields if fetch fails, or keep existing
-                        // setPhoneDetails(prevDetails => ({
-                        //     ...prevDetails, // Keep user input
-                        //     storage: "", ram: "", launchDate: "", dimensions: "",
-                        //     displayResolution: "", os: "", battery: "", resolution: ""
-                        // }));
                     }
                 } catch (error) {
                     console.error("Failed to fetch phone details:", error);
@@ -103,7 +94,8 @@ export const SellerForm = () => {
         };
         fetchPhoneDetails();
     }, [selectedModel, selectedBrand]);
- 
+
+    // Keep all your handler functions exactly the same
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setPhoneDetails(prevDetails => ({
@@ -115,14 +107,11 @@ export const SellerForm = () => {
     };
 
     const handleImagesChange = (files) => {
-        console.log('Received in handleImagesChange:', files);
-        console.log('Is it an array?', Array.isArray(files));
-
         if (Array.isArray(files)) {
             setSelectedImages(files);
         } else {
             console.error("handleImagesChange did NOT receive an array!", files);
-            setSelectedImages([]); // Fallback
+            setSelectedImages([]);
         }
         setError(null);
         setSuccessMessage(null);
@@ -147,7 +136,6 @@ export const SellerForm = () => {
         formData.append('imei', phoneDetails.imei);
         formData.append('color', phoneDetails.color);
     
-        // --- Check if selectedImages is an array before looping ---
         if (!Array.isArray(selectedImages)) {
              console.error("CRITICAL: selectedImages is not an array just before sending!", selectedImages);
              setError("An internal error occurred with image handling. Please refresh and try again.");
@@ -158,10 +146,8 @@ export const SellerForm = () => {
             formData.append('images', file);
         });
     
-        // --- GET THE TOKEN ---
-        const token = localStorage.getItem('token'); // Or however you store your token
+        const token = localStorage.getItem('token');
     
-        // --- CHECK FOR TOKEN ---
         if (!token) {
             setError("Authentication error: You might need to log in again.");
             setIsSubmitting(false);
@@ -169,24 +155,18 @@ export const SellerForm = () => {
         }
     
         try {
-            const response = await fetch("http://localhost:5000/api/product/upload-phone", {
-                method: 'POST',
-                // --- ADD AUTHORIZATION HEADER ---
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // No 'Content-Type' needed for FormData, browser sets it
-                },
-                body: formData,
-            });
+    const response = await fetch("http://localhost:5000/api/seller/upload", {
+      method: "POST",
+      credentials: "include", // For cookies
+      body: formData
+    });
     
             const data = await response.json();
     
             if (response.ok) {
                 setSuccessMessage(data.message || "Phone uploaded successfully!");
                 console.log("Upload successful:", data);
-                // Optionally reset form
             } else {
-                 // Check specifically for 401 again, might indicate expired token
                  if (response.status === 401) {
                      setError(data.message || "Authentication failed. Please log in again.");
                  } else {
@@ -201,133 +181,205 @@ export const SellerForm = () => {
             setIsSubmitting(false);
         }
     };
+
     return (
-    <form onSubmit={handleSubmit} className="min-h-[calc(100vh-4rem)] w-full  bg-gray-50">
-    <p className="font-[Montserrat] text-xl left-5 font-bold text-[#003566] pt-2 pb-2 relative lg:left-33 lg:text-3xl">
-                List Phone for Sale
-            </p>
-
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            {successMessage && <p className="text-green-500 text-center mb-4">{successMessage}</p>}
-
-            {/* --- CORRECTED Image Upload Section --- */}
-            <div className="flex flex-col  border-[#2B2A2A]/50 pt-4 pb-4"> {/* Maybe add pt-4 pb-4 */}
-                <p className="text-sm text-[#003566] font-medium font-[Merriweather] mb-2 ml-6 lg:text-md">
-                    Upload Images <span className="text-[#FF0000]">*</span>
-                </p>
-                {/* Container for the UploadImage component */}
-                <div className="bg-[#FFFFFF] w-full px-4 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-0 lg:ml-4 lg:w-[calc(100%-2rem)]">
-                     {/* Use your UploadImage component here */}
-                     {/* Pass the handler to the 'onImagesChange' prop */}
-                     <UploadImage onImagesChange={handleImagesChange} />
-                </div>
-                 {/* Display selected image count below the component */}
-                 {selectedImages.length > 0 && (
-                        <p className="text-xs text-gray-600 mt-2 ml-6">
-                            {selectedImages.length} image(s) ready for upload.
-                        </p>
-                    )}
-            </div>
-            {/* --- End of Corrected Section --- */}
-
-
-            {/* ... (rest of your form elements: Brand, Model, Inputs, Button) ... */}
-             {/* Brand and Model Selection */}
-            <div className="lg:flex">
-                {/* Brand */}
-                <div className="mt-5">
-                    <p className="text-sm lg:text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-7">
-                        Brand <span className="text-[#FF0000]">*</span>
-                    </p>
-                    <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-5">
-                        <select
-                            className="text-md text-[rgba(0,0,0,0.5)] font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
-                            value={selectedBrand}
-                            onChange={(e) => {
-                                setSelectedBrand(e.target.value);
-                                setSelectedModel(""); // Reset model when brand changes
-                                setPhoneDetails(prev => ({ price: prev.price, imei: prev.imei, color: prev.color, storage: "", ram: "", launchDate: "", dimensions: "", displayResolution: "", os: "", battery: "", resolution: "" }));
-                                setError(null); // Clear error
-                                setSuccessMessage(null);
-                            }}
-                            required
-                        >
-                            <option value="">Select brand</option>
-                            {brands.map((brandObj, idx) => (
-                                <option key={idx} value={brandObj.brand}>
-                                    {brandObj.brand}
-                                </option>
-                            ))}
-                        </select>
+        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-screen mx-auto">
+                <div className="bg-white shadow rounded-lg overflow-hidden">
+                    {/* Form Header */}
+                    <div className="px-6 py-5 border-b border-gray-200 bg-[#FF9F1C]">
+                        <h2 className="text-xl font-bold text-white">List Phone for Sale</h2>
                     </div>
-                </div>
 
-                {/* Model */}
-                <div className="-ml-1 mt-4 lg:ml-2">
-                    <p className="text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-8">
-                        Model <span className="text-[#FF0000]">*</span>
-                    </p>
-                    <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-6">
-                        <select
-                            className="text-md text-[rgba(0,0,0,0.5)] font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
-                            value={selectedModel}
-                            onChange={(e) => {
-                                setSelectedModel(e.target.value);
-                                setError(null); // Clear error
-                                setSuccessMessage(null);
-                            }}
-                            required
-                            disabled={!selectedBrand || models.length === 0} // Disable if no brand or models
-                        >
-                            <option value="">Select model</option>
-                            {models.map((modelObj, idx) => (
-                                <option key={idx} value={modelObj.model}>
-                                    {modelObj.model}
-                                </option>
-                            ))}
-                        </select>
+                    {/* Status Messages */}
+                    <div className="px-6 pt-4">
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+                                <p>{error}</p>
+                            </div>
+                        )}
+                        {successMessage && (
+                            <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 text-green-700">
+                                <p>{successMessage}</p>
+                            </div>
+                        )}
                     </div>
-                </div>
-            </div>
 
-            {/* Other Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-0">
-                {[
-                    { label: "Price (USD)", name: "price", placeholder: "Enter Price in USD", type: "number", required: true },
-                    { label: "IMEI no", name: "imei", placeholder: "Enter IMEI no", type: "text", required: true },
-                    { label: "Color", name: "color", placeholder: "Enter Color of Your Phone", type: "text", required: true },
-                    { label: "Storage", name: "storage", placeholder: "Storage (e.g., 128GB)", type: "text", required: false },
-                    { label: "RAM", name: "ram", placeholder: "RAM (e.g., 8GB)", type: "text", required: false },
-                    // ... other optional fields ...
-                ].map((item, index) => (
-                     (item.required || ['storage', 'ram'].includes(item.name)) &&
-                    <div key={index} className="lg:w-70 mt-5 flex flex-col">
-                         <p className="text-md text-[#003566] font-medium font-[Merriweather] mb-2 ml-7">
-                            {item.label} {item.required && <span className="text-[#FF0000]">*</span>}
-                        </p>
-                        <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center text-center border-1 border-[#2B2A2A]/50 ml-5">
-                            <input
-                                className="font-medium font-[Montserrat] w-60 h-10 ml-5 outline-none border-none focus:ring-0"
-                                type={item.type || "text"}
-                                name={item.name}
-                                placeholder={item.placeholder}
-                                value={phoneDetails[item.name] || ''}
-                                onChange={handleInputChange}
-                                required={item.required}
-                                step={item.type === "number" ? "0.01" : undefined}
-                            />
+                    {/* Form Content */}
+                    <form onSubmit={handleSubmit} className="px-6 py-4">
+                        {/* Image Upload Section */}
+                        <div className="mb-8">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Upload Images <span className="text-red-500">*</span>
+                            </label>
+                            <div className="mt-1 border-2 border-dashed border-gray-300 rounded-md px-6 pt-5 pb-6 flex justify-center">
+                                <UploadImage onImagesChange={handleImagesChange} />
+                            </div>
+                            {selectedImages.length > 0 && (
+                                <p className="mt-2 text-sm text-gray-500">
+                                    {selectedImages.length} image(s) selected
+                                </p>
+                            )}
                         </div>
-                    </div>
-                ))}
-            </div>
 
-             <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-[#FF9F1C] via-[#FF8F00] to-[#FF7F00] hover:bg-gradient-to-br text-[#FFFFFF] text-xl lg:text-2xl font-bold font-[Merriweather] text-center w-70 h-12 lg:w-150 lg:h-15 ml-4 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isSubmitting ? 'Submitting...' : 'Submit to Verify'}
-            </button>
-        </form>
+                        {/* Brand and Model Selection */}
+                        <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Brand <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    className="mt-1 block w-full text-black pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-[#FF9F1C] sm:text-sm rounded-md"
+                                    value={selectedBrand}
+                                    onChange={(e) => {
+                                        setSelectedBrand(e.target.value);
+                                        setSelectedModel("");
+                                        setPhoneDetails(prev => ({ 
+                                            ...prev,
+                                            storage: "", 
+                                            ram: "", 
+                                            launchDate: "", 
+                                            dimensions: "", 
+                                            displayResolution: "", 
+                                            os: "", 
+                                            battery: "", 
+                                            resolution: "" 
+                                        }));
+                                    }}
+                                    required
+                                >
+                                    <option value="">Select brand</option>
+                                    {brands.map((brandObj, idx) => (
+                                        <option key={idx} value={brandObj.brand}>
+                                            {brandObj.brand}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Model <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    className="mt-1 block text-black w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-[#FF9F1C] sm:text-sm rounded-md disabled:opacity-50"
+                                    value={selectedModel}
+                                    onChange={(e) => setSelectedModel(e.target.value)}
+                                    required
+                                    disabled={!selectedBrand || models.length === 0}
+                                >
+                                    <option value="">Select model</option>
+                                    {models.map((modelObj, idx) => (
+                                        <option key={idx} value={modelObj.model}>
+                                            {modelObj.model}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Phone Details */}
+                        <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            {/* Required Fields */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Price (Rs.) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    value={phoneDetails.price}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full text-black shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-[#FF9F1C] focus:border-[#FF9F1C] p-2"
+                                    placeholder="Enter price"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    IMEI Number <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="imei"
+                                    value={phoneDetails.imei}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block text-black w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-[#FF9F1C] focus:border-[#FF9F1C] p-2"
+                                    placeholder="Enter IMEI number"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Color <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="color"
+                                    value={phoneDetails.color}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full shadow-sm text-black sm:text-sm border border-gray-300 rounded-md focus:ring-[#FF9F1C] focus:border-[#FF9F1C] p-2"
+                                    placeholder="Enter color"
+                                    required
+                                />
+                            </div>
+
+                            {/* Optional Fields */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Storage
+                                </label>
+                                <input
+                                    type="text"
+                                    name="storage"
+                                    value={phoneDetails.storage}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full text-black shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-[#FF9F1C] focus:border-[#FF9F1C] p-2"
+                                    placeholder="e.g. 128GB"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    RAM
+                                </label>
+                                <input
+                                    type="text"
+                                    name="ram"
+                                    value={phoneDetails.ram}
+                                    onChange={handleInputChange}
+                                    className="mt-1 text-black block w-full shadow-sm sm:text-sm border border-gray-300 rounded-md focus:ring-[#FF9F1C] focus:border-[#FF9F1C] p-2"
+                                    placeholder="e.g. 8GB"
+                                />
+                            </div>
+
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="mt-8 pb-4">
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#FF9F1C] to-[#FF8F00] hover:from-[#FF8F00] hover:to-[#FF7F00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9F1C] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    "Submit to Verify"
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     );
 };

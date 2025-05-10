@@ -14,6 +14,7 @@ export const Header = () => {
     { name: "About Us", path: "/about" },
     { name: "Services", path: "/services" },
     { name: "Contact", path: "/contact" },
+    {name: "Catalog", path: "/catalog" },
   ];
 
   return (
@@ -46,19 +47,6 @@ export const Header = () => {
               </Link>
             ))}
 
-            {/* Search */}
-            <div className="relative hidden sm:flex items-center w-full md:w-64 min-w-0">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-[#FF9F1C] focus:border-transparent"
-              />
-              <button className="absolute right-1 hover:text-[#FF9F1C] ">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path  strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </div>
 
             {/* Cart and Seller */}
             <div className="flex items-center space-x-4">

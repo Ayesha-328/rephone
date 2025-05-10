@@ -14,11 +14,14 @@ export const CartProvider = ({ children }) => {
         setCartItems((prev) => prev.filter(item => item.productid !== productid));
     };    
 
+    const clearCart = () => {
+        setCartItems([]);
+    };
+
     return (
-        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart }}>
+        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );
 };
-
 export const useCart = () => useContext(CartContext);

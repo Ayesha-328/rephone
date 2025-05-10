@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { FaPhone, FaCheckCircle, FaRegCreditCard, FaShippingFast, FaHandHoldingUsd } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { GlowingEffect } from "./ui/glowing-effect";
 
 export function HowRePhoneWorks() {
@@ -86,11 +87,12 @@ export function HowRePhoneWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
           viewport={{ once: true }}
-          className="mt-8"
-        >
-          <button className="bg-gradient-to-r from-[#003366] to-[#165ba0] text-white py-3 px-6 rounded-xl shadow-md hover:brightness-110 transition">
+          className="mt-8">
+        <button className="bg-gradient-to-r from-[#003366] to-[#165ba0] text-white py-3 px-6 rounded-xl shadow-md hover:brightness-110 transition">
+          <Link to="/seller/login" className="w-full h-full">
             Start Selling Your Phone Now
-          </button>
+          </Link>
+        </button>
         </motion.div>
       </div>
     </section>

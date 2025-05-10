@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import BecomeSellerImg from "../assets/becomeSellerImage.jpg"; // Adjust the path as necessary
+import { Link } from "react-router-dom";
+
 
 export function BecomeASeller() {
   return (
@@ -72,7 +74,9 @@ export function BecomeASeller() {
             className="mt-8"
           >
             <button className="bg-gradient-to-r from-[#003366] to-[#165ba0] text-white py-3 px-6 rounded-xl shadow-md hover:brightness-110 transition">
-              Become a Seller
+            <Link to="/seller/login" className="w-full h-full">
+    Become a Seller
+        </Link>
             </button>
           </motion.div>
         </motion.div>

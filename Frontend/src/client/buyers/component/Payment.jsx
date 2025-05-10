@@ -1,12 +1,22 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useCart } from "./CartContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../../components/Header";
+
 const Payment = () => {
     const { cartItems } = useCart();
     const navigate = useNavigate();
+
+    // All original constants and calculations
+    const deliveryCharges = 1000;
+    const taxRate = 0.17;
+    const platform = 0.003;
+
+    const subtotal = cartItems.reduce((total, item) => total + parseFloat(item.price), 0);
+    const tax = subtotal * taxRate;
+    const platformFee = subtotal * platform;
+    const orderTotal = (subtotal + deliveryCharges + tax + platformFee).toFixed(2);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -19,6 +29,7 @@ const Payment = () => {
         nearestLandmark: "",
     });
 
+    // Keep all handlers exactly the same
     const handleInputChange = (e) => {
         setFormData((prev) => ({
             ...prev,
@@ -30,7 +41,7 @@ const Payment = () => {
         try {
             const response = await axios.post("http://localhost:5000/api/order/create", {
                 ...formData,
-                items: cartItems.map((item) => item.productid), // ensure you have productid in cartItems
+                items: cartItems.map((item) => item.productid),
                 paymentMethod: "COD",
             });
 
@@ -42,20 +53,19 @@ const Payment = () => {
             alert("Error while placing order");
         }
     };
+
     const handleSafePay = async () => {
         try {
-            // 1. First create the order
             const orderResponse = await axios.post("http://localhost:5000/api/order/create", {
                 ...formData,
                 items: cartItems.map((item) => item.productid),
                 paymentMethod: "SafePay",
             });
-    
+
             const { orderId } = orderResponse.data;
-    
-            // 2. Now initiate payment using the orderId
+
             const response = await axios.post(`http://localhost:5000/api/payment/initiate/${orderId}`);
-    
+
             if (response.data.redirectUrl) {
                 window.location.href = response.data.redirectUrl;
             }
@@ -64,70 +74,142 @@ const Payment = () => {
             alert("Error while initiating SafePay payment");
         }
     };
-    
 
     return (
-       <div>
-        <Header/>
-         <div className="ml-100 mt-35 mb-10 pb-5 w-170 bg-[#FFFFFF]">
-            <div className="border-b-1 border-[rgba(0,0,0,0.5)]">
-                <p className="font-[Montserrat] text-xl font-bold text-[#003566] pt-2 pb-2 relative lg:left-5 lg:text-3xl">
-                    Payment Information
-                </p>
-            </div>
+        <div className="flex flex-col min-h-screen min-w-screen bg-[#003566] px-10">
+            <Header />
+            
+            {/* Main content container - properly centered */}
+            <div className="flex-grow flex justify-center items-start w-full px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+                <div className="w-full max-w-7xl bg-white shadow-xl rounded-xl overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-[#FF9F1C] px-6 py-4">
+                        <h2 className="text-2xl font-bold text-white">Complete Your Purchase</h2>
+                    </div>
 
-            {cartItems.map((item, index) => (
-                <div key={index} className="border-1 border-[rgba(0,0,0,0.5)] w-160 mt-5 ml-5 pb-4">
-                    <div className="flex ml-5">
-                        <img className="w-15 h-20 border-2 border-[#003566]" src={item.image} alt="" />
-                        <div>
-                            <p className="font-[Merriweather] ml-10 mt-5 font-bold">{item.phone_model}</p>
-                            <p className="text-[#00BA00] ml-10">In stock</p>
-                            {/* <p className="ml-10">Price: ${item.price}</p> */}
-                            <p className="ml-10">Price: ${item.price} + 630 (Platform Fee)</p>
-                            <p className="ml-10 font-semibold">Total: ${item.price + 630}</p>
+                    <div className="flex flex-col lg:flex-row bg-gray-800 ">
+                        {/* LEFT SIDE: Cart and Order Summary */}
+                        <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8 border-b lg:border-b-0 lg:border-r">
+                            <h3 className="text-xl font-semibold text-white mb-4">Order Summary</h3>
+                            <div className=" border-gray-100">
+                                {/* Cart Items */}
+                                <div className="bg-gray-100 divide-y divide-white">
+                                    {cartItems.map((item, index) => (
+                                        <div key={index} className="p-4">
+                                            <div className="flex items-start gap-4">
+                                                <img 
+                                                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md border border-gray-200" 
+                                                    src={item.image} 
+                                                    alt={item.phone_model} 
+                                                />
+                                                <div className="flex-1">
+                                                    <h4 className="font-semibold text-[#003566]">{item.phone_model}</h4>
+                                                    <p className="text-sm text-green-600 mt-1">In stock</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-medium">Rs. {item.price}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
 
+                                {/* Order Details */}
+                                <div className="p-4 bg-gray-100 rounded-b-lg">
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Subtotal</span>
+                                            <span>Rs. {subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Delivery Charges</span>
+                                            <span>Rs. {deliveryCharges.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Platform Fee (0.3%)</span>
+                                            <span>Rs. {platformFee.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Tax (17% GST)</span>
+                                            <span>Rs. {tax.toFixed(2)}</span>
+                                        </div>
+                                        <div className="h-px bg-gray-200 my-2"></div>
+                                        <div className="flex justify-between font-semibold text-base">
+                                            <span>Total</span>
+                                            <span className="text-[#003566]">Rs. {orderTotal}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Payment Methods */}
+                                <div className="pt-7">
+                                    <h3 className="text-xl font-semibold text-white mb-4">Payment Method</h3>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <button
+                                            onClick={handleSafePay}
+                                            className="flex items-center justify-center bg-gray-300 text-[#FF9F1C] font-medium py-3 px-6 rounded-lg"
+                                        >
+                                            <span className="mr-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3 1h10a1 1 0 011 1v1H4V7a1 1 0 011-1zm0 3v6h10V9H5z" clipRule="evenodd" />
+                                                </svg>
+                                            </span>
+                                            Pay with SafePay
+                                        </button>
+                                        <button
+                                            onClick={handleCOD}
+                                            className="flex items-center justify-center bg-gray-300 text-[#FF9F1C] font-medium py-3 px-6 rounded-lg"
+                                        >
+                                            <span className="mr-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                                                    <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                                                </svg>
+                                            </span>
+                                            Cash on Delivery
+                                        </button>
+                                    </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        {/* RIGHT SIDE: Customer Information Form */}
+                        <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8">
+                            <h3 className="text-xl font-semibold text-white">Customer Information</h3>
+                            <div className="space-y-4 text-white">
+                                {[
+                                    { label: "Name", name: "name", type: "text" },
+                                    { label: "Email", name: "email", type: "email" },
+                                    { label: "Phone Number", name: "phoneNumber", type: "tel" },
+                                    { label: "City", name: "city", type: "text" },
+                                    { label: "Area", name: "area", type: "text" },
+                                    { label: "Street", name: "street", type: "text" },
+                                    { label: "House Number", name: "houseNumber", type: "text" },
+                                    { label: "Nearest Landmark", name: "nearestLandmark", type: "text" },
+                                ].map((field, index) => (
+                                    <div key={index} className="flex flex-col">
+                                        <label className="text-sm font-medium text-white mb-1" htmlFor={field.name}>
+                                            {field.label} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            id={field.name}
+                                            type={field.type}
+                                            name={field.name}
+                                            value={formData[field.name]}
+                                            onChange={handleInputChange}
+                                            className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#003566] focus:border-transparent transition"
+                                            required
+                                        />
+                                    </div>
+                                ))}
+
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
-            ))}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                {[
-                    { label: "Name", name: "name" },
-                    { label: "Email", name: "email" },
-                    { label: "Phone no", name: "phoneNumber" },
-                    { label: "City", name: "city" },
-                    { label: "Area", name: "area" },
-                    { label: "Street", name: "street" },
-                    { label: "House Number", name: "houseNumber" },
-                    { label: "Nearest Landmark", name: "nearestLandmark" },
-                ].map((item, index) => (
-                    <div key={index} className="lg:w-70 mt-5 flex flex-col col-y-2">
-                        <p className="text-md text-[#003566] font-medium mb-2 ml-7">
-                            {item.label} <span className="text-[#FF0000]">*</span>
-                        </p>
-                        <div className="bg-[#FFFFFF] w-70 h-15 flex items-center justify-center border-1 border-[#2B2A2A]/50 ml-5">
-                            <input
-                                className="font-medium w-60 h-10 ml-5 outline-none border-none"
-                                type="text"
-                                name={item.name}
-                                value={formData[item.name]}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                    </div>
-                ))}
             </div>
-
-            <button onClick={handleSafePay} className="bg-gradient-to-r from-[#FF9F1C] via-[#FF8F00] to-[#FF7F00] hover:bg-gradient-to-br text-[#FFFFFF] text-3xl font-bold font-[Merriweather] text-center w-70 h-12 lg:w-160 lg:h-12 ml-4 mt-10">
-                Pay Throug SafePay
-            </button>
-            <button onClick={handleCOD} className="bg-gradient-to-r from-[#FF9F1C] via-[#FF8F00] to-[#FF7F00] hover:bg-gradient-to-br text-[#FFFFFF] text-3xl font-bold font-[Merriweather] text-center w-70 h-12 lg:w-160 lg:h-12 ml-4 mt-10">
-                COD
-            </button>
         </div>
-       </div>
     );
 };
 

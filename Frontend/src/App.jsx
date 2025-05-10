@@ -19,6 +19,7 @@ import Payment from "./client/buyers/component/Payment.jsx";
 import ProductDescription from "./components/PhoneDescription.jsx";
 import { CartProvider } from "./client/buyers/component/CartContext.jsx";
 import OrderConfirmation from "./client/buyers/component/OrderConfirmation.jsx";
+import CatalogPage from "./pages/CatalogPage.jsx";
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/services" element={<ServicesPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
 
             {/* Seller Routes */}
             <Route path="/seller/login" element={<Login />} />

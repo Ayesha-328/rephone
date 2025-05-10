@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Header } from '../components/Header';
+import Footer from '../components/Footer';
 import { SideFilterBar } from '../components/sideFilterBar';
 import ProductCatalog from '../components/catalogComponent';
 
@@ -7,89 +9,117 @@ const CatalogPage = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filters, setFilters] = useState({
     brands: [],
-    minPrice: null, // Add initial state for price filters
-    maxPrice: null, // Add initial state for price filters
+    minPrice: null,
+    maxPrice: null,
   });
-  const [loading, setLoading] = useState(true); // Add loading state for fetching
-  const [error, setError] = useState(null); // Add error state for fetching
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch all products once
+  // Fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
-        setLoading(true);
-        setError(null);
+      setLoading(true);
+      setError(null);
       try {
         const res = await fetch('http://localhost:5000/api/product/verified');
-         if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
-          }
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        console.log("Fetched Products:", data);
 
-        if (Array.isArray(data)) {
-          setAllProducts(data);
-          setFilteredProducts(data); // Initialize filtered products with all products
-        } else {
-             setError("Invalid data format from API.");
-             setAllProducts([]);
-             setFilteredProducts([]);
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid response format: expected an array");
         }
+
+        // Ensure products have required fields
+        const validatedProducts = data.map(product => ({
+          ...product,
+          phone_brand: product.phone_brand || 'Unknown',
+          price: typeof product.price === 'number' ? product.price : 0
+        }));
+
+        setAllProducts(validatedProducts);
+        setFilteredProducts(validatedProducts);
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError('Failed to load products. Please try again.');
-         setAllProducts([]);
-         setFilteredProducts([]);
+        console.error("Fetch error:", err.message);
+        setError("Failed to load products. Please try again later.");
+        setAllProducts([]);
+        setFilteredProducts([]);
       } finally {
-           setLoading(false);
+        setLoading(false);
       }
     };
+
     fetchProducts();
-  }, []); // Empty dependency array means this runs only once on mount
+  }, []);
 
-  // Apply filters when filter state or allProducts changes
+  // Apply filter logic
   useEffect(() => {
-    console.log("Applying Filters in CatalogPage:", filters);
-    let filtered = allProducts; // Start with all products
+    if (!Array.isArray(allProducts)) {
+      setFilteredProducts([]);
+      return;
+    }
 
-    // Apply Brand Filter
-    if (filters.brands && filters.brands.length > 0) {
-      filtered = filtered.filter(product =>
-        filters.brands.includes(product.phone_brand)
+    let filtered = [...allProducts];
+
+    // Apply brand filter if any brands are selected
+    if (filters.brands?.length > 0) {
+      filtered = filtered.filter(product => 
+        product.phone_brand && filters.brands.includes(product.phone_brand)
       );
     }
 
-    // Apply Price Filter
-    if (filters.minPrice !== null) {
-        filtered = filtered.filter(product =>
-            typeof product.price === 'number' && product.price >= filters.minPrice
-        );
-    }
-     if (filters.maxPrice !== null) {
-        filtered = filtered.filter(product =>
-             typeof product.price === 'number' && product.price <= filters.maxPrice
-        );
+    // Apply price filters
+    if (typeof filters.minPrice === 'number') {
+      filtered = filtered.filter(product => 
+        typeof product.price === 'number' && product.price >= filters.minPrice
+      );
     }
 
+    if (typeof filters.maxPrice === 'number') {
+      filtered = filtered.filter(product => 
+        typeof product.price === 'number' && product.price <= filters.maxPrice
+      );
+    }
 
     setFilteredProducts(filtered);
-  }, [filters, allProducts]); // Re-run whenever filters or the original product list changes
-
-  if (loading) {
-      return <div className="text-center mt-20 ml-90">Loading products...</div>;
-  }
-
-  if (error) {
-      return <div className="text-center mt-20 ml-90 text-red-600">Error: {error}</div>;
-  }
-
+  }, [filters, allProducts]);
 
   return (
-    <div className="flex">
-        {/* Pass the setFilters function and allProducts array down */}
-      <SideFilterBar allProducts={allProducts} setFilters={setFilters} />
-        {/* Pass the filteredProducts to the catalog component */}
-      <ProductCatalog products={filteredProducts} className="relative mt-10 w-351" />
-    </div>
+    <>
+      <Header />
+      <div className="bg-[#002241] text-gray-900 pt-24 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-4">Product Catalog</h1>
+          {loading ? (
+            <div className="flex justify-center items-center h-[60vh] text-xl font-semibold animate-pulse text-white">
+              Loading products...
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-[60vh] text-xl font-semibold text-red-400">
+              {error}
+            </div>
+          ) : (
+            
+            <div className="flex flex-col lg:flex-row gap-8 px-3 lg:px-1 py-10">
+              
+              <SideFilterBar 
+                allProducts={allProducts} 
+                setFilters={setFilters} 
+              />
+              <section className="w-full lg:w-3/4">
+                {filteredProducts.length > 0 ? (
+                  <ProductCatalog products={filteredProducts} />
+                ) : (
+                  <div className="flex justify-center items-center h-64 text-lg text-white">
+                    No products match your filters. Try adjusting your criteria.
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 

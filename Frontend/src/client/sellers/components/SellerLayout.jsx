@@ -80,7 +80,7 @@ const SellerLayout = ({ children }) => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="font-medium text-white">My Products</span>
+                <span className="font-medium text-white">Listed Products</span>
               </Link>
               <Link
                 to="/seller/orders"
@@ -89,8 +89,18 @@ const SellerLayout = ({ children }) => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="font-medium text-white">My Orders</span>
+                <span className="font-medium text-white">Orders</span>
               </Link>
+              <Link
+  to="/seller/guidelines"
+  className="flex items-center gap-3 px-4 py-3 text-[#ffffff] hover:bg-white/10 rounded-lg transition-colors"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m2 0a2 2 0 100-4H7a2 2 0 100 4zm10 8H5a2 2 0 01-2-2V6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2z" />
+  </svg>
+  <span className="font-medium text-white">Selling Guidelines</span>
+</Link>
+
               <Link
                 to="/seller/SellerProfilePage"
                 className="flex items-center gap-3 px-4 py-3 text-[#ffffff] hover:bg-white/10 rounded-lg transition-colors"
@@ -119,7 +129,7 @@ const SellerLayout = ({ children }) => {
 
         {/* Main Content */}
         <main 
-          className={`flex-1 min-h-[calc(100vh-4rem)] transition-all duration-300 ${
+          className={`flex-1 min-h-[calc(100vh-4rem)]  ${
             isSidebarOpen ? 'ml-64' : 'ml-0'
           }`}
         >

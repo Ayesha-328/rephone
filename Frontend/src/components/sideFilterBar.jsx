@@ -1,161 +1,212 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-// Accept setFilters and allProducts as props from CatalogPage
-export const SideFilterBar = ({ setFilters, allProducts }) => {
-    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-    const [isBrandOpen, setIsBrandOpen] = useState(false);
-    const [isPriceRangeOpen, setIsPriceRangeOpen] = useState(false);
+export const SideFilterBar = ({ setFilters, allProducts = [] }) => {
+  // State for collapsible sections
+  const [openSections, setOpenSections] = useState({
+    brand: true,
+    price: true
+  });
 
-    // Use state to manage filter values *locally* in the filter bar
-    const [checkedBrands, setCheckedBrands] = useState([]);
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [brands, setBrands] = useState([]); // State for available brands
+  // Filter states
+  const [checkedBrands, setCheckedBrands] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 50000]);
+  
+  // Extract unique brands
+  const brands = [...new Set(allProducts.map(p => p.phone_brand))].filter(Boolean);
 
-    // --- REMOVE THE INDEPENDENT FETCHING OF PRODUCTS ---
-    // useEffect(() => {
-    //     const fetchProducts = async () => { /* ... */ };
-    //     fetchProducts();
-    // }, []);
-    // --- END REMOVE ---
+  // Calculate max price on component mount
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      const maxProductPrice = Math.max(...allProducts.map(p => p.price || 0));
+      setPriceRange([0, Math.ceil(maxProductPrice * 1.2)]);
+    }
+  }, [allProducts]);
 
-    // Effect to populate brands when allProducts prop changes
-    useEffect(() => {
-        if (Array.isArray(allProducts)) {
-             const uniqueBrands = [...new Set(allProducts.map(product => product.phone_brand))];
-             setBrands(uniqueBrands);
-        }
-    }, [allProducts]); // Dependency on allProducts prop
+  // Toggle section collapse
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
-    const toggleCatalog = () => setIsCatalogOpen(!isCatalogOpen);
-    const toggleBrand = () => setIsBrandOpen(!isBrandOpen);
-    const togglePriceRange = () => setIsPriceRangeOpen(!isPriceRangeOpen);
+  // Handle price range change
+  const handlePriceChange = (index, value) => {
+    const numValue = parseInt(value) || 0;
+    const newPriceRange = [...priceRange];
+    newPriceRange[index] = numValue;
+    
+    // Ensure min doesn't exceed max and vice versa
+    if (index === 0) {
+      newPriceRange[0] = Math.min(numValue, priceRange[1]);
+    } else {
+      newPriceRange[1] = Math.max(numValue, priceRange[0]);
+    }
+    
+    setPriceRange(newPriceRange);
+  };
 
-    const handleBrandCheckboxChange = (event, brand) => {
-        if (event.target.checked) {
-            setCheckedBrands([...checkedBrands, brand]);
-        } else {
-            setCheckedBrands(checkedBrands.filter(item => item !== brand));
-        }
-    };
+  // Apply filters
+  const handleApplyFilters = () => {
+    setFilters({
+      brands: checkedBrands,
+      minPrice: priceRange[0],
+      maxPrice: priceRange[1]
+    });
+  };
 
-     const handleMinPriceChange = (e) => {
-        const value = e.target.value;
-        // Allow empty string or numbers
-        if (value === '' || /^\d+$/.test(value)) {
-             setMinPrice(value);
-        }
-    };
+  // Reset filters
+  const handleResetFilters = () => {
+    setCheckedBrands([]);
+    if (allProducts.length > 0) {
+      const maxProductPrice = Math.max(...allProducts.map(p => p.price || 0));
+      setPriceRange([0, Math.ceil(maxProductPrice * 1.2)]);
+    }
+    setFilters({});
+  };
 
-    const handleMaxPriceChange = (e) => {
-        const value = e.target.value;
-         // Allow empty string or numbers
-         if (value === '' || /^\d+$/.test(value)) {
-             setMaxPrice(value);
-         }
-    };
+  return (
+    <aside className="w-full lg:w-72 bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
+        <button 
+          onClick={handleResetFilters}
+          className="text-xs text-[#FF9F1C] hover:text-[#e68a00] font-medium"
+        >
+          Reset All
+        </button>
+      </div>
 
-
-    // --- THIS IS THE KEY CHANGE ---
-    const handleApplyFilters = () => {
-        console.log("Applying Filters:", { brands: checkedBrands, minPrice, maxPrice });
-
-        // Call the setFilters prop passed from CatalogPage
-        // Pass the current state of the local filters
-        setFilters({
-            brands: checkedBrands,
-            minPrice: minPrice === '' ? null : parseFloat(minPrice), // Convert to number or null
-            maxPrice: maxPrice === '' ? null : parseFloat(maxPrice), // Convert to number or null
-        });
-    };
-    // --- END KEY CHANGE ---
-
-
-    // The render logic remains mostly the same,
-    // but remove the error and loading state from this component's display
-    // as it should be handled by the parent (CatalogPage) if needed.
-    return (
-        <div className='w-80 p-4 absolute top-10 z-100'>
-            {/* ... your existing text elements ... */}
-             <p className='font-bold font-[Merriweather] text-lg text-[rgba(0,0,0,0.7)]'>
-                Rephone/ <span className='text-[#000000]'>Catalog</span>
-            </p>
-            <p className='mt-2 font-extrabold font-[Montserrat] text-3xl text-[#000000]'>Catalog</p>
-
-            <div className="mt-2">
-                <p
-                    onClick={toggleCatalog}
-                    className="gap-4 text-[#000000] font-[Montserrat] text-xl font-bold cursor-pointer flex"
-                >
-                    Category <span><img className='w-4 mt-2' src={isCatalogOpen ? '/down_arrow.svg' : '/right_arrow.svg'} alt="" /></span>
-                </p>
-
-                {isCatalogOpen && (
-                    <div>
-                        {/* Brand Filter */}
-                        <p
-                            onClick={toggleBrand}
-                            className="mt-2 ml-5 gap-4 text-[#000000] font-[Merriweather] text-md font-md cursor-pointer flex"
-                        >
-                            By Brand <span><img className='w-4 mt-1' src={isBrandOpen ? '/down_arrow.svg' : '/right_arrow.svg'} alt="" /></span>
-                        </p>
-                        {isBrandOpen && (
-                             // Map over the 'brands' state derived from props
-                            <div className="ml-7 mt-2 flex flex-col space-y-2">
-                                {brands.map((brand, index) => (
-                                    <label key={index} className="flex items-center space-x-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={checkedBrands.includes(brand)}
-                                            onChange={(e) => handleBrandCheckboxChange(e, brand)}
-                                            className="w-5 h-5 border-2 border-[#003566] rounded-none appearance-none checked:bg-[#003566]"
-                                        />
-                                        <span className="text-lg font-thin font-[Merriweather] text-[rgba(0,0,0,0.8)]">{brand}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-
-                        <img className='mt-2' src="/line_break.svg" alt="" />
-
-                        {/* Price Filter */}
-                        <p
-                            onClick={togglePriceRange}
-                            className="mt-2 ml-5 gap-4 text-[#000000] font-[Merriweather] text-md font-md cursor-pointer flex"
-                        >
-                            By Range <span><img className='w-4 mt-1' src={isPriceRangeOpen ? '/down_arrow.svg' : '/right_arrow.svg'} alt="" /></span>
-                        </p>
-                        {isPriceRangeOpen && (
-                            <div className="ml-7 mt-2 flex flex-row space-x-2">
-                                <input
-                                    className="font-medium font-[Montserrat] w-20 h-10 px-2 border border-[#2B2A2A]/50"
-                                    type="text"
-                                    placeholder="Min"
-                                    value={minPrice}
-                                    onChange={handleMinPriceChange}
-                                />
-                                <input
-                                    className="font-medium font-[Montserrat] w-20 h-10 px-2 border border-[#2B2A2A]/50"
-                                    type="text"
-                                    placeholder="Max"
-                                    value={maxPrice}
-                                    onChange={handleMaxPriceChange}
-                                />
-                            </div>
-                        )}
-
-                        <img className='mt-2' src="/line_break.svg" alt="" />
-                    </div>
-                )}
-            </div>
-
-            <button
-                style={{ backgroundColor: '#003566' }}
-                className='w-25 text-[#FFFFFF] text-medium text-lg rounded-md mt-5 px-4 py-2'
-                onClick={handleApplyFilters} // Call the function that updates parent state
-            >
-                Apply
-            </button>
+      {/* Brand Filter */}
+      <div className="mb-6 border-b border-gray-100 pb-6">
+        <div 
+          className="flex justify-between items-center cursor-pointer mb-3"
+          onClick={() => toggleSection('brand')}
+        >
+          <h3 className="text-sm font-medium text-gray-700">Brand</h3>
+          <svg 
+            className={`w-4 h-4 text-gray-500 transform transition-transform ${openSections.brand ? 'rotate-0' : '-rotate-90'}`}
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-    );
+        
+        {openSections.brand && (
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+            {brands.map((brand) => (
+              <label key={brand} className="flex items-center space-x-3 py-1">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 text-[#FF9F1C] border-gray-300 rounded focus:ring-[#FF9F1C]"
+                  checked={checkedBrands.includes(brand)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setCheckedBrands([...checkedBrands, brand]);
+                    } else {
+                      setCheckedBrands(checkedBrands.filter(b => b !== brand));
+                    }
+                  }}
+                />
+                <span className="text-sm text-gray-600 capitalize">{brand}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Price Range Filter */}
+      <div className="mb-6">
+        <div 
+          className="flex justify-between items-center cursor-pointer mb-3"
+          onClick={() => toggleSection('price')}
+        >
+          <h3 className="text-sm font-medium text-gray-700">Price Range</h3>
+          <svg 
+            className={`w-4 h-4 text-gray-500 transform transition-transform ${openSections.price ? 'rotate-0' : '-rotate-90'}`}
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+        
+        {openSections.price && (
+          <div>
+            <div className="flex items-center justify-between space-x-4 mb-2">
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">Min</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-xs text-gray-400">Rs.</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={priceRange[1]}
+                    value={priceRange[0]}
+                    onChange={(e) => handlePriceChange(0, e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#FF9F1C] focus:border-[#FF9F1C]"
+                  />
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">Max</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-xs text-gray-400">Rs.</span>
+                  <input
+                    type="number"
+                    min={priceRange[0]}
+                    max={priceRange[1]}
+                    value={priceRange[1]}
+                    onChange={(e) => handlePriceChange(1, e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#FF9F1C] focus:border-[#FF9F1C]"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 px-2">
+              <input
+                type="range"
+                min="0"
+                max={priceRange[1]}
+                value={priceRange[0]}
+                onChange={(e) => handlePriceChange(0, e.target.value)}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <input
+                type="range"
+                min="0"
+                max={priceRange[1]}
+                value={priceRange[1]}
+                onChange={(e) => handlePriceChange(1, e.target.value)}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-4"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleApplyFilters}
+        className="w-full bg-[#FF9F1C] hover:bg-[#e68a00] text-black border font-medium py-2.5 rounded-md transition duration-200 shadow-sm"
+      >
+        Apply Filters
+      </button>
+    </aside>
+  );
+};
+
+SideFilterBar.propTypes = {
+  setFilters: PropTypes.func.isRequired,
+  allProducts: PropTypes.arrayOf(PropTypes.shape({
+    phone_brand: PropTypes.string,
+    price: PropTypes.number,
+  }))
+};
+
+SideFilterBar.defaultProps = {
+  allProducts: []
 };

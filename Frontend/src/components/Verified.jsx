@@ -46,8 +46,8 @@ export function Verified() {
               
                 <GlareCard className="bg-[#003366] border-0 outline-0 shadow-lg flex flex-col items-center justify-center p-4">
               <img src={benefit.img} alt={benefit.title} className="w-23 h-23 mb-4 mx-auto" />
-              <h3 className="font-[Montserrat] text-lg font-semibold">{benefit.title}</h3>
-              <p className="text-sm mt-2">{benefit.desc}</p>
+              <h3 className="font-[Montserrat] text-lg text-white font-semibold">{benefit.title}</h3>
+              <p className="text-sm mt-2 text-white">{benefit.desc}</p>
 
                 </GlareCard>
             </motion.div>
@@ -62,10 +62,6 @@ export function Verified() {
           viewport={{ once: true }}
           className="mt-8"
         >
-          <button className="bg-gradient-to-r from-[#003366] to-[#165ba0] text-white py-3 px-6 rounded-xl shadow-md hover:brightness-110 transition">
-            
-            Learn More About IMEI Verification
-          </button>
         </motion.div>
       </div>
     </section>

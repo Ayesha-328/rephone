@@ -51,11 +51,13 @@ const createOrder = async (req, res) => {
 
     // 4. Compute Totals
     const platformFeeRate = 0.013;
-    const deliveryFee = 500; // fixed per entire order
+    const deliveryFee = 1000; // fixed per entire order
     let baseTotal = 0;
+    const saleTax = 0.17;
     for (const p of products) baseTotal += parseFloat(p.price);
     const platformFee = baseTotal * platformFeeRate;
-    const totalPrice = baseTotal + platformFee + deliveryFee;
+    const tax= baseTotal * saleTax;
+    const totalPrice = baseTotal + platformFee + deliveryFee + tax;
 
     // 5. Create Order
     const orderResult = await client.query(

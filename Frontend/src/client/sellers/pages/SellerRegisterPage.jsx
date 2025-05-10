@@ -10,64 +10,31 @@ const SellerRegisterPage = () => {
     phoneNumber: '',
     password: '',
     confirmPassword: '',
-    sellerType: 'seller', // default type that will be sent to API
+    sellerType: 'seller',
     city: '',
     area: '',
     street: '',
     houseNumber: '',
-    nearestLandmark: '',
-    profilePicture: null
+    nearestLandmark: ''
   });
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState('');
-  const [uploading, setUploading] = useState(false);  // For handling the upload state
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      try {
-        setUploading(true); // Set uploading state to true when file is selected
-
-        // Create a FormData object
-        const formData = new FormData();
-        formData.append('profilePic', file);  // Append the image file to the form data
-
-        // Upload image to Cloudinary
-        const response = await fetch('http://localhost:5000/api/seller/upload-profile-pic', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to upload image');
-        }
-
-        const result = await response.json();
-        setUploading(false); // Set uploading state to false once upload is done
-
-        if (result.url) {
-          setFormData(prev => ({
-            ...prev,
-            profilePicture: result.url // Store the image URL returned by Cloudinary
-          }));
-
-          // Create preview URL
-          setPreviewUrl(result.url);
-        } else {
-          setError('Failed to upload image');
-        }
-      } catch (err) {
-        setUploading(false); // Set uploading state to false if an error occurs
-        console.error('Error uploading image:', err);
-        setError('Error uploading image. Please try again.');
-      }
+      setProfilePictureFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    
+    // Validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -78,59 +45,50 @@ const SellerRegisterPage = () => {
       return;
     }
 
-    if (!formData.profilePicture) {
+    if (!profilePictureFile) {
       setError('Profile picture is required');
       return;
     }
 
-    try {
-      const submitData = {
-        name: formData.name,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        password: formData.password,
-        sellerType: formData.sellerType,
-        city: formData.city,
-        area: formData.area,
-        street: formData.street,
-        houseNumber: formData.houseNumber,
-        nearestLandmark: formData.nearestLandmark,
-        profilePicture: formData.profilePicture
-      };
+    setUploading(true);
 
-      console.log('Sending data:', submitData); // Debug log
+    try {
+      // Create FormData object
+      const formDataToSend = new FormData();
+      
+      // Append all form fields
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phoneNumber', formData.phoneNumber);
+      formDataToSend.append('password', formData.password);
+      formDataToSend.append('sellerType', formData.sellerType);
+      formDataToSend.append('city', formData.city);
+      formDataToSend.append('area', formData.area);
+      formDataToSend.append('street', formData.street);
+      formDataToSend.append('houseNumber', formData.houseNumber);
+      formDataToSend.append('nearestLandmark', formData.nearestLandmark);
+
+      // Append the profile picture file with the correct field name
+      formDataToSend.append('profilePic', profilePictureFile);
 
       const response = await fetch('http://localhost:5000/api/seller/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(submitData),
+        body: formDataToSend,
+        // Don't set Content-Type header - let the browser set it with boundary
       });
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const textResponse = await response.text();
-        console.error('Non-JSON response:', textResponse);
-        throw new Error('Server returned non-JSON response');
-      }
 
       const data = await response.json();
 
-      if (response.ok) {
-        navigate('/seller/login');
-      } else {
-        console.error('Server error:', data); // Debug log
-        setError(data.error || data.errors?.[0]?.msg || 'Registration failed');
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Registration failed');
       }
+
+      navigate('/seller/login');
     } catch (err) {
-      console.error('Error details:', err);
-      if (err.message === 'Server returned non-JSON response') {
-        setError('Server error. Please try again later.');
-      } else {
-        setError('Connection error. Please try again.');
-      }
+      console.error('Registration error:', err);
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 

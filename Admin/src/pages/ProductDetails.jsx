@@ -38,7 +38,7 @@ const ProductDetails = () => {
           {details.phoneImage.map((image, index) => (
             <img 
               key={index}
-              src={`data:image/jpeg;base64,${image}`}
+              src={image}  // Use the URL directly without base64 conversion
               alt={`Product view ${index + 1}`}
             />
           ))}

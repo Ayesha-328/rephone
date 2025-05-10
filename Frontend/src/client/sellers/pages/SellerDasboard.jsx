@@ -8,7 +8,7 @@ export const SellerDashboard = () => {
 
   return (
     <SellerLayout>
-      <div className="p-6 w-full">
+      <div>
         {seller ? (
           <SellerForm />
         ) : (

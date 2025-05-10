@@ -342,8 +342,162 @@ ORDER BY o."orderDate" DESC;
 }
 
 
+// Get seller metrics
+const getSellerMetrics = async (req, res) => {
+    const { sellerId } = req.params;
+    const client = await pool.connect();
+    try {
+        // Total listings
+        const listingsQuery = await client.query(
+            `SELECT COUNT(*) as total_listings 
+             FROM "ListedProduct" 
+             WHERE "sellerId" = $1`,
+            [sellerId]
+        );
+        
+        // Pending orders
+        const pendingOrdersQuery = await client.query(
+            `SELECT COUNT(DISTINCT so."subOrderId") as pending_orders
+             FROM "SubOrder" so
+             JOIN "Order" o ON so."orderId" = o."orderId"
+             WHERE so."sellerId" = $1 AND o."orderStatus" = 'pending'`,
+            [sellerId]
+        );
+        
+        // Completed orders
+        const completedOrdersQuery = await client.query(
+            `SELECT COUNT(DISTINCT so."subOrderId") as completed_orders
+             FROM "SubOrder" so
+             JOIN "Order" o ON so."orderId" = o."orderId"
+             WHERE so."sellerId" = $1 AND o."orderStatus" = 'completed'`,
+            [sellerId]
+        );
+        
+        // Total earnings
+        const earningsQuery = await client.query(
+            `SELECT COALESCE(SUM(oi."unitPrice"), 0) as total_earnings
+             FROM "OrderItem" oi
+             JOIN "SubOrder" so ON oi."subOrderId" = so."subOrderId"
+             JOIN "Order" o ON so."orderId" = o."orderId"
+             WHERE so."sellerId" = $1 AND o."orderStatus" = 'completed'`,
+            [sellerId]
+        );
+        
+        // Sales data for chart (last 30 days)
+        const salesDataQuery = await client.query(
+            `SELECT 
+                DATE_TRUNC('day', o."orderDate") as day,
+                COUNT(DISTINCT so."subOrderId") as order_count,
+                SUM(oi."unitPrice") as daily_earnings
+             FROM "Order" o
+             JOIN "SubOrder" so ON o."orderId" = so."orderId"
+             JOIN "OrderItem" oi ON so."subOrderId" = oi."subOrderId"
+             WHERE so."sellerId" = $1 
+                AND o."orderStatus" = 'completed'
+                AND o."orderDate" >= NOW() - INTERVAL '30 days'
+             GROUP BY day
+             ORDER BY day ASC`,
+            [sellerId]
+        );
 
+        res.status(200).json({
+            totalListings: listingsQuery.rows[0].total_listings,
+            pendingOrders: pendingOrdersQuery.rows[0].pending_orders,
+            completedOrders: completedOrdersQuery.rows[0].completed_orders,
+            totalEarnings: earningsQuery.rows[0].total_earnings,
+            salesData: salesDataQuery.rows
+        });
+    } catch (error) {
+        console.error("Error fetching seller metrics:", error);
+        res.status(500).json({ error: "An error occurred while fetching seller metrics" });
+    } finally {
+        client.release();
+    }
+};
 
+// Get listing status counts
+const getListingStatusCounts = async (req, res) => {
+    const { sellerId } = req.params;
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            `SELECT 
+                status,
+                COUNT(*) as count
+             FROM "ListedProduct"
+             WHERE "sellerId" = $1
+             GROUP BY status`,
+            [sellerId]
+        );
+        
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching listing status counts:", error);
+        res.status(500).json({ error: "An error occurred while fetching listing status counts" });
+    } finally {
+        client.release();
+    }
+};
+// upload phone
+const uploadPhone = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const user = req.user;
+    const { brand, model, price, imei, color } = req.body;
+
+    // Get array of image URLs from uploaded files (or empty if none provided)
+    const phoneImages = req.files ? req.files.map(file => file.path) : [];
+
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        // Check if phone brand and model exists
+        const phoneInfo = await client.query(
+            `SELECT * FROM "Phone" WHERE phone_brand = $1 AND phone_model = $2`,
+            [brand, model]
+        );
+
+        if (phoneInfo.rows.length === 0) {
+            return res.status(400).json({ message: "Phone info cannot be found!" });
+        }
+
+        // Check IMEI uniqueness
+        const existingPhone = await client.query(
+            `SELECT * FROM "ListedProduct" WHERE "imeiNumber" = $1`,
+            [imei]
+        );
+
+        if (existingPhone.rows.length > 0) {
+            return res.status(400).json({ message: "Phone with this IMEI number already exists!" });
+        }
+
+        // Insert phone with images array
+        const uploadPhone = await client.query(
+            `INSERT INTO "ListedProduct" ("sellerId", "phoneId", "imeiNumber", "phoneImage", "color", "price") 
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [user.sellerid, phoneInfo.rows[0].phoneId, imei, phoneImages, color, price]
+        );
+
+        await client.query("COMMIT");
+
+        res.status(201).json({
+            message: `Phone uploaded successfully!`,
+            phone: uploadPhone.rows[0]
+        });
+
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error("Error during phone upload:", error);
+        res.status(500).json({ error: "Product upload failed. Please try again." });
+    } finally {
+        client.release();
+    }
+};
 export { 
     registerSeller, 
     loginSeller, 
@@ -351,5 +505,8 @@ export {
     updateSellerProfile, 
     deleteSellerProfile, 
     getSellerPhones,
-    getSellerOrders
+    getSellerOrders,
+    getListingStatusCounts,
+    getSellerMetrics,
+    uploadPhone
 };

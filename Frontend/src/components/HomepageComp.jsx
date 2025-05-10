@@ -62,7 +62,7 @@ className="flex gap-4 justify-center md:justify-start">
         as="button"
         className="text-base md:text-lg font-semibold font-[aperture] text-[#fdb34d] bg-[#002241] px-8 py-3 hover:bg-[#003566] transition-colors"
       >
-       <Link to='/'>Buy Now</Link>
+       <Link to='/catalog'>Buy Now</Link>
       </HoverBorderGradient>
       
       <HoverBorderGradient
