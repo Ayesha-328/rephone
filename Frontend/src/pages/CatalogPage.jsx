@@ -88,7 +88,7 @@ const CatalogPage = () => {
       <Header />
       <div className="bg-[#002241] text-gray-900 pt-24 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-4">Product Catalog</h1>
+          <h1 className="text-3xl font-[aperture] text-white mb-4">Product Catalog</h1>
           {loading ? (
             <div className="flex justify-center items-center h-[60vh] text-xl font-semibold animate-pulse text-white">
               Loading products...

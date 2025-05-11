@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // We'll create this
+ 
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-content">
         <div className="sidebar-logo">
-          <h1>Rephone</h1>
+          <img src="/rephone-logo.png" alt="" height="70px" width="200px"/>
           <hr></hr>
         </div>
         <nav className="sidebar-nav">

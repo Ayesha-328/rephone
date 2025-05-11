@@ -867,6 +867,7 @@ body {
     font-weight: 500;
     cursor: pointer;
     border: none;
+    margin-bottom: 15px;
 }
 
 .verify-btn {
@@ -901,4 +902,18 @@ body {
 .reject-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+.clean{
+  background: #0dce64;
+  color: #fff !important;
+  padding: 5px 12px;
+  border-radius: 100px;
+  margin-top: 20px;
+}
+.blacklist{
+  background: #ce370d;
+  color: #fff !important;
+  padding: 5px 12px;
+  border-radius: 100px;
+  margin-top: 20px;
 }

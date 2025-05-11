@@ -1,5 +1,4 @@
 import pool from "../db/connectDB.js";
-import { validationResult } from "express-validator";
 import crypto from 'crypto';
 import querystring from 'querystring';
 import safepay from '@sfpy/node-core';
@@ -47,7 +46,7 @@ const initiatePayment = async (req, res) => {
 
         // 3. Build checkout URL 
         // ********************************* FRONTEND: Add the order confirmation and cancellation page url here ********************************
-        const checkoutURL = `https://sandbox.api.getsafepay.com/embedded/?env=sandbox&tracker=${tracker}&tbt=${passport}&environment=sandbox&source=mywebsite.com&orderId=${orderId}&cancelUrl=${encodeURIComponent(`${process.env.FRONTEND_URL}/payment-cancel/${orderId}`)}&redirectUrl=${encodeURIComponent(`${process.env.FRONTEND_URL}/payment-success/${orderId}`)}&webhooks=true`;
+        const checkoutURL = `https://sandbox.api.getsafepay.com/embedded/?env=sandbox&tracker=${tracker}&tbt=${passport}&environment=sandbox&source=mywebsite.com&orderId=${orderId}&cancelUrl=${encodeURIComponent(`${process.env.FRONTEND_URL}/payment-cancel/${orderId}`)}&redirectUrl=${encodeURIComponent(`${process.env.FRONTEND_URL}`)}&webhooks=true`;
 
         // 4. Send URL back to frontend
         return res.status(200).json({ redirectUrl: checkoutURL });
@@ -138,6 +137,38 @@ const paymentNotification = async (req, res) => {
     }
   };
   
+//   get payment status
+const getPaymentStatus = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const orderResult = await pool.query(
+            'SELECT * FROM "Order" WHERE "orderId" = $1',
+            [orderId]
+        );
+        const order = orderResult.rows[0];
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        // 1. Get payment status
+        const paymentResult = await pool.query(
+            'SELECT * FROM "Payment" WHERE "paymentId" = $1',
+            [order.paymentId]
+        );
+        const payment = paymentResult.rows[0];
+
+        if (!payment) {
+            return res.status(404).json({ error: "Payment not found" });
+        }
+
+        res.status(200).json({ status: payment.paymentStatus });
+
+    } catch (error) {
+        console.error("Error getting payment status:", error);
+        res.status(500).json({ error: "Failed to get payment status" });
+    }
+}
   
 
 // payfast payment initiation
@@ -307,4 +338,4 @@ const paymentNotification = async (req, res) => {
 
 
 
-export { initiatePayment, paymentNotification };
+export { initiatePayment, paymentNotification, getPaymentStatus };

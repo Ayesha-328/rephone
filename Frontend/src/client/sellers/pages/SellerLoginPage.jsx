@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSellerAuth } from '../context/SellerAuthContext';
+import {Header} from '../../../components/Header';
 
 const SellerLoginPage = () => {
     const [email, setEmail] = useState('');
@@ -49,6 +50,8 @@ const SellerLoginPage = () => {
     }
 
     return (
+        <>
+        <Header />
         <div className="auth-container">
             <div className="auth-box">
                 <h1 className="auth-title"><b>Rephone</b></h1>
@@ -92,6 +95,7 @@ const SellerLoginPage = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

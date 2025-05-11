@@ -155,6 +155,7 @@ export const SellerForm = () => {
             });
     
             const data = await response.json();
+            console.log("Response data:", data);
     
             if (response.ok) {
                 setSuccessMessage(data.message || "Phone uploaded successfully!");
@@ -180,7 +181,7 @@ export const SellerForm = () => {
                     setError("Session expired. Please log in again.");
                     logout();
                 } else {
-                    setError(data.message || `Upload failed: ${response.statusText}`);
+                    setError(data.error || `Upload failed: ${response.statusText}`);
                 }
             }
         } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../../components/Footer';
+import {Header} from '../../../components/Header';
 
 const SellerRegisterPage = () => {
   const navigate = useNavigate();
@@ -101,6 +102,8 @@ const SellerRegisterPage = () => {
   };
 
   return (
+    <>
+    <Header />
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow bg-[#003566] text-white p-8 pt-28">
         <div className="max-w-2xl mx-auto">
@@ -297,6 +300,7 @@ const SellerRegisterPage = () => {
       </div>
       <Footer />
     </div>
+    </>
   );
 };
 
