@@ -106,8 +106,10 @@ const getAdminDashboardAnalytics = async (req, res) => {
     const totalVerifiedPhones = await pool.query(`SELECT COUNT(*) FROM "ListedProduct" WHERE status = 'verified'`);
 
     // total transactions today
-
+    const totalTransactionsToday = await pool.query(`SELECT COUNT(*) FROM "Payment" WHERE DATE(date) = CURRENT_DATE`);
     // total revenue generated
+   const totalRevenueGenerated = await pool.query(`SELECT COALESCE(SUM(amount), 0) FROM "Payment" WHERE "paymentStatus" = 'Paid'`);
+
 
     res.status(200).json({
         message: "Admin dashboard analytics",
@@ -115,9 +117,8 @@ const getAdminDashboardAnalytics = async (req, res) => {
         totalVerifiedPhones: totalVerifiedPhones.rows[0].count,
         totalSellers: totalSellers.rows[0].count,
         totalBusinessAccounts: totalBusinessAccounts.rows[0].count,
-        // ongoingDisputes: 0,
-        // totalTransactionsToday: 0,
-        // totalRevenueGenerated: 0,
+        totalTransactionsToday: totalTransactionsToday.rows[0].count,
+        totalRevenueGenerated: totalRevenueGenerated.rows[0].coalesce || totalRevenueGenerated.rows[0].sum
     });
 };
 

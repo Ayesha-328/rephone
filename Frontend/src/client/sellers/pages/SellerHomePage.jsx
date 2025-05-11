@@ -100,7 +100,7 @@ const SellerHomePage = () => {
           
           // Fetch status counts
           const statusRes = await fetch(`http://localhost:5000/api/seller/listing-status/${seller.sellerId}`, {
-            credentials: 'include' // Important for cookies
+            credentials: 'include' 
           });
           
           if (!statusRes.ok) {
@@ -159,8 +159,7 @@ const SellerHomePage = () => {
   }
 
   const isBusiness = seller.sellerType === 'business';
-  const listingLimit = isBusiness ? 'Unlimited' : '1';
-  const remainingListings = isBusiness ? 'Unlimited' : Math.max(0, 1 - (metrics?.totalListings || 0));
+
 
   // Prepare chart data
   const salesChartData = {
