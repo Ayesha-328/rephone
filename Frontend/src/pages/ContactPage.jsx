@@ -70,7 +70,7 @@ const ContactPage = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full p-2 rounded bg-white/20 border border-white/30 text-white"
+                    className="w-full p-2 rounded bg-white/20 border border-white/30 text-black"
                     required
                   >
                     <option value="general">General Inquiry</option>

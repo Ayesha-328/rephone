@@ -66,7 +66,7 @@ const Dashboard = () => {
           <p className="stats-value">{stats.totalSellers}</p>
         </div>
                 <div className="stats-card">
-          <h3>total Bussines Acounts</h3>
+          <h3>Total Bussines Acounts</h3>
           <p className="stats-value">{stats.totalBusinessAccounts}</p>
         </div>
         <div className="stats-card">
@@ -79,7 +79,7 @@ const Dashboard = () => {
         </div>
         <div className="stats-card">
           <h3>Revenue Generated</h3>
-          <p className="stats-value">{stats.totalRevenueGenerated}</p>
+          <p className="stats-value">Rs. {stats.totalRevenueGenerated}</p>
         </div>
       </div>
     </div>

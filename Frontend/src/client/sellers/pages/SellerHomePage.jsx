@@ -212,31 +212,24 @@ const SellerHomePage = () => {
               title="Total Listings"
               value={metrics?.totalListings || 0}
               icon={<FiSmartphone className="text-xl" />}
-              trend="up"
-              trendValue="5% from last month"
             />
             <MetricCard
               title="Pending Orders"
               value={metrics?.pendingOrders || 0}
               icon={<FiClock className="text-xl" />}
-              trend="down"
-              trendValue="10% from last week"
+             
               className="border-l-4 border-yellow-500"
             />
             <MetricCard
               title="Completed Orders"
               value={metrics?.completedOrders || 0}
               icon={<FiCheckCircle className="text-xl" />}
-              trend="up"
-              trendValue="15% from last month"
               className="border-l-4 border-green-500"
             />
             <MetricCard
               title="Total Earnings"
               value={`Rs. ${(metrics?.totalEarnings || 0).toLocaleString()}`}
               icon={<FiArrowUpCircle className="text-xl" />}
-              trend="up"
-              trendValue="20% from last month"
               className="border-l-4 border-blue-500"
             />
           </div>
